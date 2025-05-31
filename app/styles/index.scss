@@ -22,3 +22,24 @@ body {
   // --secondary-color: rgba(138, 43, 226, var(--gradient-opacity));
   // --accent-color: rgba(180, 170, 220, var(--gradient-opacity));
 }
+
+html[dir="rtl"] {
+  // Potentially add specific html-level RTL adjustments if needed later
+}
+
+body {
+  direction: rtl;
+  text-align: right; // Default text alignment for RTL
+}
+
+// Ensure UI elements that should not flip (like progress bars, graphs, etc.)
+// can be explicitly set to LTR if needed later by adding a class.
+.force-ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+.force-rtl {
+  direction: rtl;
+  text-align: right;
+}

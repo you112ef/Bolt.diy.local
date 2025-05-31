@@ -25,15 +25,15 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
   const [activeTab, setActiveTab] = useState<TabType>('data');
 
   const tabs: { id: TabType; label: string; icon: string; component?: ReactElement }[] = [
-    { id: 'data', label: 'Data', icon: 'i-ph:database', component: <DataTab /> },
-    { id: 'providers', label: 'Providers', icon: 'i-ph:key', component: <ProvidersTab /> },
-    { id: 'connection', label: 'Connection', icon: 'i-ph:link', component: <ConnectionsTab /> },
-    { id: 'features', label: 'Features', icon: 'i-ph:star', component: <FeaturesTab /> },
+    { id: 'data', label: 'البيانات', icon: 'i-ph:database', component: <DataTab /> },
+    { id: 'providers', label: 'المزودون', icon: 'i-ph:key', component: <ProvidersTab /> },
+    { id: 'connection', label: 'الاتصال', icon: 'i-ph:link', component: <ConnectionsTab /> },
+    { id: 'features', label: 'الميزات', icon: 'i-ph:star', component: <FeaturesTab /> },
     ...(debug
       ? [
           {
             id: 'debug' as TabType,
-            label: 'Debug Tab',
+            label: 'تصحيح الأخطاء',
             icon: 'i-ph:bug',
             component: <DebugTab />,
           },
@@ -43,7 +43,7 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
       ? [
           {
             id: 'event-logs' as TabType,
-            label: 'Event Logs',
+            label: 'سجلات الأحداث',
             icon: 'i-ph:list-bullets',
             component: <EventLogsTab />,
           },
@@ -65,21 +65,21 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
         </RadixDialog.Overlay>
         <RadixDialog.Content aria-describedby={undefined} asChild>
           <motion.div
-            className="fixed top-[50%] left-[50%] z-max h-[85vh] w-[90vw] max-w-[900px] translate-x-[-50%] translate-y-[-50%] border border-bolt-elements-borderColor rounded-lg shadow-lg focus:outline-none overflow-hidden"
+            className="fixed inset-0 z-max h-full w-full border-0 rounded-none sm:h-[85vh] sm:w-[90vw] sm:max-w-[900px] sm:border sm:rounded-lg sm:top-[50%] sm:left-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] border-bolt-elements-borderColor shadow-lg focus:outline-none overflow-hidden"
             initial="closed"
             animate="open"
             exit="closed"
             variants={dialogVariants}
           >
-            <div className="flex h-full">
+            <div className="flex flex-col sm:flex-row h-full">
               <div
                 className={classNames(
-                  'w-48 border-r border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 p-4 flex flex-col justify-between',
+                  'w-full sm:w-48 border-l border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 p-4 flex flex-col justify-between flex-shrink-0 sm:overflow-y-auto',
                   styles['settings-tabs'],
                 )}
               >
-                <DialogTitle className="flex-shrink-0 text-lg font-semibold text-bolt-elements-textPrimary mb-2">
-                  Settings
+                <DialogTitle className="flex-shrink-0 text-lg font-semibold text-bolt-elements-textPrimary mb-2 text-center sm:text-right">
+                  الإعدادات
                 </DialogTitle>
                 {tabs.map((tab) => (
                   <button
@@ -99,7 +99,7 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
                     className={classNames(styles['settings-button'], 'flex items-center gap-2')}
                   >
                     <div className="i-ph:github-logo" />
-                    GitHub
+                    جيت هب
                   </a>
                   <a
                     href="https://stackblitz-labs.github.io/bolt.diy/"
@@ -108,17 +108,17 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
                     className={classNames(styles['settings-button'], 'flex items-center gap-2')}
                   >
                     <div className="i-ph:book" />
-                    Docs
+                    المستندات
                   </a>
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col p-8 pt-10 bg-bolt-elements-background-depth-2">
+              <div className="flex-1 flex flex-col p-4 sm:p-8 sm:pt-10 bg-bolt-elements-background-depth-2 overflow-y-auto">
                 <div className="flex-1 overflow-y-auto">{tabs.find((tab) => tab.id === activeTab)?.component}</div>
               </div>
             </div>
             <RadixDialog.Close asChild onClick={onClose}>
-              <IconButton icon="i-ph:x" className="absolute top-[10px] right-[10px]" />
+              <IconButton icon="i-ph:x" className="absolute top-[10px] left-[10px] sm:right-[10px] sm:left-auto" />
             </RadixDialog.Close>
           </motion.div>
         </RadixDialog.Content>

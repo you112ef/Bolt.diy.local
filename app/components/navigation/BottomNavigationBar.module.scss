@@ -1,0 +1,43 @@
+.navBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px; // Adjust as needed
+  background-color: #f0f0f0; // Placeholder color
+  border-top: 1px solid #cccccc; // Placeholder border
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000; // Ensure it's on top
+}
+
+.navButton {
+  background: none;
+  border: none;
+  color: #333333; // Placeholder color
+  padding: 10px 15px;
+  font-size: 14px; // Adjust as needed
+  cursor: pointer;
+  text-align: center;
+  flex: 1;
+
+  &.active {
+    color: #007bff; // Placeholder active color
+    font-weight: bold;
+  }
+}
+
+// Dark mode overrides
+:global(html[data-theme='dark']) .navBar {
+  background-color: var(--bolt-elements-bg-depth-2, #121212); // Fallback if var not found
+  border-top-color: var(--bolt-elements-borderColor, #333333);
+}
+
+:global(html[data-theme='dark']) .navButton {
+  color: var(--bolt-elements-textPrimary, #ffffff);
+
+  &.active {
+    color: var(--bolt-elements-item-contentAccent, #007bff); // Use an accent color for active
+  }
+}

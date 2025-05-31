@@ -82,11 +82,11 @@ export default function ProvidersTab() {
           <div className="mt-2">
             {envBaseUrl && (
               <label className="block text-xs text-bolt-elements-textSecondary text-green-300 mb-2">
-                Set On (.env) : {envBaseUrl}
+                معين في (.env) : {envBaseUrl}
               </label>
             )}
             <label className="block text-sm text-bolt-elements-textSecondary mb-2">
-              {envBaseUrl ? 'Override Base Url' : 'Base URL '}:{' '}
+              {envBaseUrl ? 'تجاوز العنوان الأساسي' : 'العنوان الأساسي '}:{' '}
             </label>
             <input
               type="text"
@@ -104,7 +104,7 @@ export default function ProvidersTab() {
                   baseUrl: newBaseUrl,
                 });
               }}
-              placeholder={`Enter ${provider.name} base URL`}
+              placeholder={`أدخل العنوان الأساسي لـ ${provider.name}`}
               className="w-full bg-white dark:bg-bolt-elements-background-depth-4 relative px-2 py-1.5 rounded-md focus:outline-none placeholder-bolt-elements-textTertiary text-bolt-elements-textPrimary dark:text-bolt-elements-textPrimary border border-bolt-elements-borderColor"
             />
           </div>
@@ -121,7 +121,7 @@ export default function ProvidersTab() {
       <div className="flex mb-4">
         <input
           type="text"
-          placeholder="Search providers..."
+          placeholder="ابحث عن المزودين..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full bg-white dark:bg-bolt-elements-background-depth-4 relative px-2 py-1.5 rounded-md focus:outline-none placeholder-bolt-elements-textTertiary text-bolt-elements-textPrimary dark:text-bolt-elements-textPrimary border border-bolt-elements-borderColor"
@@ -134,10 +134,9 @@ export default function ProvidersTab() {
       {/* URL Configurable Providers Section */}
       {urlConfigurableProviders.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-2 text-bolt-elements-textPrimary">Experimental Providers</h3>
+          <h3 className="text-lg font-semibold mb-2 text-bolt-elements-textPrimary">المزودون التجريبيون</h3>
           <p className="text-sm text-bolt-elements-textSecondary mb-4">
-            These providers are experimental and allow you to run AI models locally or connect to your own
-            infrastructure. They require additional setup but offer more flexibility.
+            هؤلاء المزودون تجريبيون ويسمحون لك بتشغيل نماذج الذكاء الاصطناعي محليًا أو الاتصال بالبنية التحتية الخاصة بك. تتطلب إعدادًا إضافيًا ولكنها توفر مرونة أكبر.
           </p>
           <div className="space-y-4">{urlConfigurableProviders.map(renderProviderCard)}</div>
         </div>
