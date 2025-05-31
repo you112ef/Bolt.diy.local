@@ -2,10 +2,14 @@ import { useStore } from '@nanostores/react';
 import type { LinksFunction } from '@remix-run/cloudflare';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
-import { themeStore } from './lib/stores/theme';
+import { themeStore }_ from './lib/stores/theme'; // themeStore might not be needed if settings store handles it
+import { languageDirectionStore, languageCodeStore } from './lib/stores/settings'; // Adjust path if needed
 import { stripIndents } from './utils/stripIndent';
 import { createHead } from 'remix-island';
 import { useEffect } from 'react';
+// Ensure themeStore is correctly imported if it's separate, or remove if language/settings store consolidates theme
+// For now, assuming themeStore is still separate as per original file structure.
+import { themeStore } from './lib/stores/theme';
 
 import reactToastifyStyles from 'react-toastify/dist/ReactToastify.css?url';
 import globalStyles from './styles/index.scss?url';
@@ -64,12 +68,21 @@ export const Head = createHead(() => (
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const theme = useStore(themeStore);
+  const direction = useStore(languageDirectionStore);
+  const lang = useStore(languageCodeStore);
 
   useEffect(() => {
     document.querySelector('html')?.setAttribute('data-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    document.documentElement.dir = direction;
+    document.documentElement.lang = lang;
+  }, [direction, lang]);
+
   return (
+    // Remove <html lang="en" dir="ltr"> from here if it exists
+    // The attributes are now set dynamically on documentElement
     <>
       {children}
       <ScrollRestoration />

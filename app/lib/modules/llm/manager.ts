@@ -23,6 +23,17 @@ export class LLMManager {
 
     return LLMManager._instance;
   }
+
+  isOnline(): boolean {
+    // This is a placeholder. Replace with actual network detection logic.
+    // You might need to use browser APIs like `navigator.onLine` or a custom check.
+    if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
+      return navigator.onLine;
+    }
+    // Default to online if navigator.onLine is not available (e.g., in a server environment)
+    return true;
+  }
+
   get env() {
     return this._env;
   }

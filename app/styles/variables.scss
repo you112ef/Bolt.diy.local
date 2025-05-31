@@ -110,7 +110,7 @@
   --bolt-elements-borderColor: theme('colors.alpha.white.10');
   --bolt-elements-borderColorActive: theme('colors.accent.500');
 
-  --bolt-elements-bg-depth-1: theme('colors.gray.950');
+  --bolt-elements-bg-depth-1: theme('colors.black'); // Changed from theme('colors.gray.950') for OLED
   --bolt-elements-bg-depth-2: theme('colors.gray.900');
   --bolt-elements-bg-depth-3: theme('colors.gray.800');
   --bolt-elements-bg-depth-4: theme('colors.alpha.white.5');
@@ -248,4 +248,25 @@
   --bolt-elements-terminal-color-brightMagenta: var(--bolt-terminal-brightMagenta);
   --bolt-elements-terminal-color-brightCyan: var(--bolt-terminal-brightCyan);
   --bolt-elements-terminal-color-brightWhite: var(--bolt-terminal-brightWhite);
+}
+
+/* Responsive Design Variables */
+@media (max-width: 1024px) { // lg breakpoint
+  :root {
+    --chat-min-width: 100%; /* Allow chat to take full width */
+    --workbench-width: 100%;
+    --workbench-left: 0;
+  }
+}
+
+@media (max-width: 768px) { // md breakpoint
+  :root {
+    --chat-max-width: 100%; /* Max width for chat content area on smaller screens */
+  }
+}
+
+@media (max-width: 640px) { // sm breakpoint
+  :root {
+    // Further adjustments for very small screens if needed
+  }
 }

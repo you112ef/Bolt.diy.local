@@ -10,6 +10,7 @@ import {
   PROVIDER_REGEX,
   WORK_DIR,
 } from '~/utils/constants';
+import { LlamaProvider } from '~/lib/modules/llm/providers/llama';
 import ignore from 'ignore';
 import type { IProviderSetting } from '~/types/model';
 import { PromptLibrary } from '~/lib/common/prompt-library';
@@ -156,8 +157,7 @@ export async function streamText(props: {
   contextOptimization?: boolean;
 }) {
   const { messages, env: serverEnv, options, apiKeys, files, providerSettings, promptId, contextOptimization } = props;
-
-  // console.log({serverEnv});
+  const llmManager = LLMManager.getInstance(serverEnv as any); // Get LLMManager instance
 
   let currentModel = DEFAULT_MODEL;
   let currentProvider = DEFAULT_PROVIDER.name;
@@ -181,33 +181,57 @@ export async function streamText(props: {
     return message;
   });
 
-  const provider = PROVIDER_LIST.find((p) => p.name === currentProvider) || DEFAULT_PROVIDER;
-  const staticModels = LLMManager.getInstance().getStaticModelListFromProvider(provider);
-  let modelDetails = staticModels.find((m) => m.name === currentModel);
+  let providerInstance: import('~/lib/modules/llm/base-provider').BaseProvider;
+  let modelDetails: import('~/lib/modules/llm/types').ModelInfo | undefined;
 
-  if (!modelDetails) {
-    const modelsList = [
-      ...(provider.staticModels || []),
-      ...(await LLMManager.getInstance().getModelListFromProvider(provider, {
-        apiKeys,
-        providerSettings,
-        serverEnv: serverEnv as any,
-      })),
-    ];
-
-    if (!modelsList.length) {
-      throw new Error(`No models found for provider ${provider.name}`);
-    }
-
-    modelDetails = modelsList.find((m) => m.name === currentModel);
+  if (llmManager.isOnline()) {
+    providerInstance = llmManager.getProvider(currentProvider) || llmManager.getDefaultProvider();
+    const staticModels = providerInstance.staticModels || [];
+    modelDetails = staticModels.find((m) => m.name === currentModel);
 
     if (!modelDetails) {
-      // Fallback to first model
-      logger.warn(
-        `MODEL [${currentModel}] not found in provider [${provider.name}]. Falling back to first model. ${modelsList[0].name}`,
-      );
-      modelDetails = modelsList[0];
+      const modelsList = [
+        ...staticModels,
+        ...(await llmManager.getModelListFromProvider(providerInstance, {
+          apiKeys,
+          providerSettings,
+          serverEnv: serverEnv as any,
+        })),
+      ];
+      if (!modelsList.length) {
+        // This case should ideally be handled to prevent further errors
+        // For now, let it proceed and fail at getModelInstance or _streamText
+         logger.error(`No models found for provider ${providerInstance.name}. This might lead to an error.`);
+      }
+      modelDetails = modelsList.find((m) => m.name === currentModel);
+      if (!modelDetails && modelsList.length > 0) {
+        logger.warn(
+          `MODEL [${currentModel}] not found in provider [${providerInstance.name}]. Falling back to first model. ${modelsList[0].name}`,
+        );
+        modelDetails = modelsList[0];
+        currentModel = modelDetails.name;
+      } else if (!modelDetails) {
+           logger.error(`No model details found for ${currentModel} in ${providerInstance.name} and no fallback possible.`);
+           // Throw an error here to prevent further execution with undefined modelDetails
+           throw new Error(`Failed to find a suitable model for ${currentProvider}.`);
+      }
     }
+  } else {
+    // Offline: Use LlamaProvider
+    logger.info('Network offline. Switching to LlamaProvider.');
+    providerInstance = new LlamaProvider();
+    currentProvider = providerInstance.name;
+    // Assuming LlamaProvider has a default model or a way to select one
+    modelDetails = providerInstance.staticModels.find(m => m.name === 'llama-cpp'); // Or some other default
+    if (!modelDetails && providerInstance.staticModels.length > 0) {
+      modelDetails = providerInstance.staticModels[0];
+    }
+    if (!modelDetails) {
+        logger.error('LlamaProvider has no models configured.');
+        throw new Error('LlamaProvider has no models configured.');
+    }
+    currentModel = modelDetails.name;
+    // Display offline notification to the user (handled in BaseChat.tsx)
   }
 
   const dynamicMaxTokens = modelDetails && modelDetails.maxTokenAllowed ? modelDetails.maxTokenAllowed : MAX_TOKENS;
@@ -224,18 +248,34 @@ export async function streamText(props: {
     systemPrompt = `${systemPrompt}\n\n ${codeContext}`;
   }
 
-  logger.info(`Sending llm call to ${provider.name} with model ${modelDetails.name}`);
+  logger.info(`Sending llm call to ${providerInstance.name} with model ${currentModel}`);
 
-  return _streamText({
-    model: provider.getModelInstance({
-      model: currentModel,
-      serverEnv,
-      apiKeys,
-      providerSettings,
-    }),
-    system: systemPrompt,
-    maxTokens: dynamicMaxTokens,
-    messages: convertToCoreMessages(processedMessages as any),
-    ...options,
-  });
+  try {
+    // Ensure modelDetails is defined before calling getModelInstance
+    if (!modelDetails) {
+      logger.error(`Model details for ${currentModel} are undefined before calling AI service.`);
+      throw new Error(`Model details for ${currentModel} could not be resolved.`);
+    }
+    return await _streamText({
+      model: providerInstance.getModelInstance({
+        model: currentModel,
+        serverEnv,
+        apiKeys,
+        providerSettings,
+      }),
+      system: systemPrompt,
+      maxTokens: dynamicMaxTokens,
+      messages: convertToCoreMessages(processedMessages as any),
+      ...options,
+    });
+  } catch (error: any) { // Explicitly type error
+    logger.error(`Error during AI streamText call to ${providerInstance.name} with model ${currentModel}:`, error.message, error.stack);
+    // Return a stream that emits an error message, compatible with Vercel AI SDK client-side handling
+    return new ReadableStream({
+      start(controller) {
+        controller.error(new Error(`AI service error with ${providerInstance.name} (${currentModel}): ${error.message}`));
+        controller.close();
+      }
+    });
+  }
 }

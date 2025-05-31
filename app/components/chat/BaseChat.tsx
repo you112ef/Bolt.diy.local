@@ -3,11 +3,11 @@
  * Preventing TS checks with files presented in the video for a better presentation.
  */
 import type { Message } from 'ai';
-import React, { type RefCallback, useCallback, useEffect, useState } from 'react';
+import React, { type RefCallback, useCallback, useEffect, useState, Suspense } from 'react'; // Added Suspense
 import { ClientOnly } from 'remix-utils/client-only';
 import { Menu } from '~/components/sidebar/Menu.client';
 import { IconButton } from '~/components/ui/IconButton';
-import { Workbench } from '~/components/workbench/Workbench.client';
+// import { Workbench } from '~/components/workbench/Workbench.client'; // Removed direct import
 import { classNames } from '~/utils/classNames';
 import { MODEL_LIST, PROVIDER_LIST, initializeModelList } from '~/utils/constants';
 import { Messages } from './Messages.client';
@@ -31,7 +31,10 @@ import { toast } from 'react-toastify';
 import StarterTemplates from './StarterTemplates';
 import type { ActionAlert } from '~/types/actions';
 import ChatAlert from './ChatAlert';
-import { LLMManager } from '~/lib/modules/llm/manager';
+import { LLMManager } from '~/lib/modules/llm/manager'; // If not already imported
+import { toast } from 'react-toastify'; // If not already imported
+import { LanguageSwitcher } from '~/components/ui/LanguageSwitcher';
+import { logStore } from '~/lib/stores/logs'; // Add if not present
 
 const TEXTAREA_MIN_HEIGHT = 76;
 
@@ -102,6 +105,34 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
   ) => {
     const TEXTAREA_MAX_HEIGHT = chatStarted ? 400 : 200;
     const [apiKeys, setApiKeys] = useState<Record<string, string>>(getApiKeysFromCookies());
+    const [isOnline, setIsOnline] = useState(true);
+
+    useEffect(() => {
+      const llmManager = LLMManager.getInstance(); // Get LLMManager instance
+      const updateOnlineStatus = () => {
+        const online = llmManager.isOnline();
+        if (isOnline !== online) {
+          setIsOnline(online);
+          if (!online) {
+            toast.info("Offline mode activated. Using local AI.", { autoClose: 5000 });
+          } else {
+            toast.success("Back online!", { autoClose: 3000 });
+          }
+        }
+      };
+
+      // Check status on mount
+      updateOnlineStatus();
+
+      // Listen for online/offline events
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+
+      return () => {
+        window.removeEventListener('online', updateOnlineStatus);
+        window.removeEventListener('offline', updateOnlineStatus);
+      };
+    }, [isOnline]);
     const [modelList, setModelList] = useState(MODEL_LIST);
     const [isModelSettingsCollapsed, setIsModelSettingsCollapsed] = useState(false);
     const [isListening, setIsListening] = useState(false);
@@ -159,7 +190,11 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
         };
 
         recognition.onerror = (event) => {
-          console.error('Speech recognition error:', event.error);
+          // console.error('Speech recognition error:', event.error); // Old
+          logStore.logError('Speech recognition error', { // New
+            error: event.error,
+            message: (event as any).message, // event.message might not be standard, cast to any
+          });
           setIsListening(false);
         };
 
@@ -320,13 +355,14 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       >
         <ClientOnly>{() => <Menu />}</ClientOnly>
         <div ref={scrollRef} className="flex flex-col lg:flex-row overflow-y-auto w-full h-full">
-          <div className={classNames(styles.Chat, 'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full')}>
+          {/* Ensure chat area takes full width on small screens, and respects --chat-min-width on lg screens */}
+          <div className={classNames(styles.Chat, 'flex flex-col flex-grow w-full lg:w-[var(--chat-min-width)] lg:min-w-[var(--chat-min-width)] h-full')}>
             {!chatStarted && (
-              <div id="intro" className="mt-[16vh] max-w-chat mx-auto text-center px-4 lg:px-0">
-                <h1 className="text-3xl lg:text-6xl font-bold text-bolt-elements-textPrimary mb-4 animate-fade-in">
+              <div id="intro" className="mt-[10vh] sm:mt-[16vh] w-full max-w-chat mx-auto text-center px-4"> {/* Added w-full */}
+                <h1 className="text-2xl sm:text-3xl lg:text-6xl font-bold text-bolt-elements-textPrimary mb-3 sm:mb-4 animate-fade-in"> {/* Responsive text size */}
                   Where ideas begin
                 </h1>
-                <p className="text-md lg:text-xl mb-8 text-bolt-elements-textSecondary animate-fade-in animation-delay-200">
+                <p className="text-sm sm:text-md lg:text-xl mb-6 sm:mb-8 text-bolt-elements-textSecondary animate-fade-in animation-delay-200"> {/* Responsive text size */}
                   Bring ideas to life in seconds or get help on existing projects.
                 </p>
               </div>
@@ -341,7 +377,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                   return chatStarted ? (
                     <Messages
                       ref={messageRef}
-                      className="flex flex-col w-full flex-1 max-w-chat pb-6 mx-auto z-1"
+                      className="flex flex-col w-full flex-1 max-w-chat pb-6 mx-auto z-1" // w-full is already here, max-w-chat will be constrained by parent or CSS var
                       messages={messages}
                       isStreaming={isStreaming}
                     />
@@ -349,11 +385,11 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 }}
               </ClientOnly>
               <div
-                className={classNames('flex flex-col gap-4 w-full max-w-chat mx-auto z-prompt mb-6', {
+                className={classNames('flex flex-col gap-4 w-full max-w-chat mx-auto z-prompt mb-6', { // w-full is already here
                   'sticky bottom-2': chatStarted,
                 })}
               >
-                <div className="bg-bolt-elements-background-depth-2">
+                <div className="bg-bolt-elements-background-depth-2 w-full"> {/* Added w-full, though children might control width more */}
                   {actionAlert && (
                     <ChatAlert
                       alert={actionAlert}
@@ -367,7 +403,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 </div>
                 <div
                   className={classNames(
-                    'bg-bolt-elements-background-depth-2 p-3 rounded-lg border border-bolt-elements-borderColor relative w-full max-w-chat mx-auto z-prompt',
+                    'bg-bolt-elements-background-depth-2 p-3 rounded-lg border border-bolt-elements-borderColor relative w-full max-w-chat mx-auto z-prompt', // w-full is already here
 
                     /*
                      * {
@@ -460,6 +496,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                         'transition-all duration-200',
                         'hover:border-bolt-elements-focus',
                       )}
+                      aria-label="Custom prompt input" // Add this line
                       onDragEnter={(e) => {
                         e.preventDefault();
                         e.currentTarget.style.border = '2px solid #1488fc';
@@ -542,24 +579,25 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                         />
                       )}
                     </ClientOnly>
-                    <div className="flex justify-between items-center text-sm p-4 pt-2">
-                      <div className="flex gap-1 items-center">
-                        <IconButton title="Upload file" className="transition-all" onClick={() => handleFileUpload()}>
-                          <div className="i-ph:paperclip text-xl"></div>
+                    <div className="flex flex-col sm:flex-row justify-between items-center text-sm p-2 sm:p-4 pt-2"> {/* Stack on small screens, adjust padding */}
+                      <div className="flex gap-1 items-center flex-wrap justify-center sm:justify-start"> {/* Allow button wrapping and center on very small screens */}
+                        <LanguageSwitcher />
+                        <IconButton title="Upload file" className="transition-all p-2" onClick={() => handleFileUpload()}> {/* Increased padding for touch target */}
+                          <div className="i-ph:paperclip text-lg sm:text-xl"></div> {/* Slightly smaller icon on mobile */}
                         </IconButton>
                         <IconButton
                           title="Enhance prompt"
                           disabled={input.length === 0 || enhancingPrompt}
-                          className={classNames('transition-all', enhancingPrompt ? 'opacity-100' : '')}
+                          className={classNames('transition-all p-2', enhancingPrompt ? 'opacity-100' : '')} // Increased padding
                           onClick={() => {
                             enhancePrompt?.();
                             toast.success('Prompt enhanced!');
                           }}
                         >
                           {enhancingPrompt ? (
-                            <div className="i-svg-spinners:90-ring-with-bg text-bolt-elements-loader-progress text-xl animate-spin"></div>
+                            <div className="i-svg-spinners:90-ring-with-bg text-bolt-elements-loader-progress text-lg sm:text-xl animate-spin"></div>
                           ) : (
-                            <div className="i-bolt:stars text-xl"></div>
+                            <div className="i-bolt:stars text-lg sm:text-xl"></div>
                           )}
                         </IconButton>
 
@@ -568,11 +606,12 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                           onStart={startListening}
                           onStop={stopListening}
                           disabled={isStreaming}
+                          className="p-2" // Increased padding
                         />
-                        {chatStarted && <ClientOnly>{() => <ExportChatButton exportChat={exportChat} />}</ClientOnly>}
+                        {chatStarted && <ClientOnly>{() => <ExportChatButton exportChat={exportChat} className="p-2"/>}</ClientOnly>} {/* Increased padding */}
                         <IconButton
                           title="Model Settings"
-                          className={classNames('transition-all flex items-center gap-1', {
+                          className={classNames('transition-all flex items-center gap-1 p-2', { // Increased padding
                             'bg-bolt-elements-item-backgroundAccent text-bolt-elements-item-contentAccent':
                               isModelSettingsCollapsed,
                             'bg-bolt-elements-item-backgroundDefault text-bolt-elements-item-contentDefault':
@@ -581,12 +620,12 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                           onClick={() => setIsModelSettingsCollapsed(!isModelSettingsCollapsed)}
                           disabled={!providerList || providerList.length === 0}
                         >
-                          <div className={`i-ph:caret-${isModelSettingsCollapsed ? 'right' : 'down'} text-lg`} />
+                          <div className={`i-ph:caret-${isModelSettingsCollapsed ? 'right' : 'down'} text-md sm:text-lg`} /> {/* Responsive icon size */}
                           {isModelSettingsCollapsed ? <span className="text-xs">{model}</span> : <span />}
                         </IconButton>
                       </div>
                       {input.length > 3 ? (
-                        <div className="text-xs text-bolt-elements-textTertiary">
+                        <div className="text-xs text-bolt-elements-textTertiary mt-2 sm:mt-0"> {/* Margin top on small screens if buttons wrap */}
                           Use <kbd className="kdb px-1.5 py-0.5 rounded bg-bolt-elements-background-depth-2">Shift</kbd>{' '}
                           + <kbd className="kdb px-1.5 py-0.5 rounded bg-bolt-elements-background-depth-2">Return</kbd>{' '}
                           a new line
@@ -616,7 +655,13 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
               {!chatStarted && <StarterTemplates />}
             </div>
           </div>
-          <ClientOnly>{() => <Workbench chatStarted={chatStarted} isStreaming={isStreaming} />}</ClientOnly>
+          <ClientOnly>
+            {() => (
+              <Suspense fallback={<div className="p-4">Loading Workbench...</div>}> {/* Added Suspense and fallback */}
+                <Workbench chatStarted={chatStarted} isStreaming={isStreaming} />
+              </Suspense>
+            )}
+          </ClientOnly>
         </div>
       </div>
     );
@@ -624,3 +669,6 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     return <Tooltip.Provider delayDuration={200}>{baseChat}</Tooltip.Provider>;
   },
 );
+
+// Lazy load Workbench at the bottom of the file
+const Workbench = React.lazy(() => import('~/components/workbench/Workbench.client'));

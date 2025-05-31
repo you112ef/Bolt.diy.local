@@ -22,3 +22,24 @@ body {
   // --secondary-color: rgba(138, 43, 226, var(--gradient-opacity));
   // --accent-color: rgba(180, 170, 220, var(--gradient-opacity));
 }
+
+body {
+  font-size: 16px; // Default font size
+}
+
+@media (max-width: 768px) { // md breakpoint
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 640px) { // sm breakpoint
+  body {
+    font-size: 14px;
+  }
+}
+
+/* RTL Icon Adjustments */
+[dir="rtl"] .i-ph-caret-right {
+  transform: scaleX(-1);
+}

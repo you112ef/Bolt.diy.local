@@ -56,3 +56,24 @@ export const latestBranchStore = atom(false);
 
 export const autoSelectStarterTemplate = atom(false);
 export const enableContextOptimizationStore = atom(false);
+
+export type LanguageDirection = 'ltr' | 'rtl';
+export type LanguageCode = 'en' | 'ar';
+
+export const languageDirectionStore = atom<LanguageDirection>('ltr');
+export const languageCodeStore = atom<LanguageCode>('en');
+
+export function setLanguage(code: LanguageCode, direction: LanguageDirection) {
+  languageCodeStore.set(code);
+  languageDirectionStore.set(direction);
+  if (typeof document !== 'undefined') {
+    document.documentElement.dir = direction;
+    document.documentElement.lang = code;
+  }
+}
+
+export const showSettingsWindowStore = atom<boolean>(false);
+
+export function toggleSettingsWindow() {
+  showSettingsWindowStore.set(!showSettingsWindowStore.get());
+}

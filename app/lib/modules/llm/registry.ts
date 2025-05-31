@@ -14,6 +14,7 @@ import PerplexityProvider from './providers/perplexity';
 import TogetherProvider from './providers/together';
 import XAIProvider from './providers/xai';
 import HyperbolicProvider from './providers/hyperbolic';
+import LlamaProvider from './providers/llama'; // Add this line
 
 export {
   AnthropicProvider,
@@ -23,6 +24,7 @@ export {
   GroqProvider,
   HuggingFaceProvider,
   HyperbolicProvider,
+  LlamaProvider, // Add this line
   MistralProvider,
   OllamaProvider,
   OpenAIProvider,
