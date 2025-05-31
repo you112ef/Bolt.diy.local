@@ -23,7 +23,7 @@ export function UserMessage({ content }: UserMessageProps) {
             <img
               key={index}
               src={item.image}
-              alt={`Image ${index + 1}`}
+              alt={`صورة ${index + 1}`}
               className="max-w-full h-auto rounded-lg"
               style={{ maxHeight: '512px', objectFit: 'contain' }}
             />

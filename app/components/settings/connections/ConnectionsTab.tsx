@@ -56,7 +56,7 @@ export default function ConnectionsTab() {
 
   const handleSaveConnection = async () => {
     if (!githubUsername || !githubToken) {
-      toast.error('Please provide both GitHub username and token');
+      toast.error('يرجى تقديم اسم مستخدم GitHub والرمز المميز.');
       return;
     }
 
@@ -71,11 +71,11 @@ export default function ConnectionsTab() {
         username: githubUsername,
         hasToken: !!githubToken,
       });
-      toast.success('GitHub credentials verified and saved successfully!');
+      toast.success('تم التحقق من بيانات اعتماد GitHub وحفظها بنجاح!');
       Cookies.set('git:github.com', JSON.stringify({ username: githubToken, password: 'x-oauth-basic' }));
       setIsConnected(true);
     } else {
-      toast.error('Invalid GitHub credentials. Please check your username and token.');
+      toast.error('بيانات اعتماد GitHub غير صالحة. يرجى التحقق من اسم المستخدم والرمز المميز.');
     }
   };
 
@@ -87,15 +87,15 @@ export default function ConnectionsTab() {
     setGithubToken('');
     setIsConnected(false);
     logStore.logSystem('GitHub connection removed');
-    toast.success('GitHub connection removed successfully!');
+    toast.success('تمت إزالة اتصال GitHub بنجاح!');
   };
 
   return (
     <div className="p-4 mb-4 border border-bolt-elements-borderColor rounded-lg bg-bolt-elements-background-depth-3">
-      <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-4">GitHub Connection</h3>
+      <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-4">الاتصال بـ GitHub</h3>
       <div className="flex mb-4">
-        <div className="flex-1 mr-2">
-          <label className="block text-sm text-bolt-elements-textSecondary mb-1">GitHub Username:</label>
+        <div className="flex-1 ms-2">
+          <label className="block text-sm text-bolt-elements-textSecondary mb-1">اسم مستخدم GitHub:</label>
           <input
             type="text"
             value={githubUsername}
@@ -105,7 +105,7 @@ export default function ConnectionsTab() {
           />
         </div>
         <div className="flex-1">
-          <label className="block text-sm text-bolt-elements-textSecondary mb-1">Personal Access Token:</label>
+          <label className="block text-sm text-bolt-elements-textSecondary mb-1">رمز الوصول الشخصي:</label>
           <input
             type="password"
             value={githubToken}
@@ -120,29 +120,29 @@ export default function ConnectionsTab() {
           <button
             onClick={handleSaveConnection}
             disabled={isVerifying || !githubUsername || !githubToken}
-            className="bg-bolt-elements-button-primary-background rounded-lg px-4 py-2 mr-2 transition-colors duration-200 hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-button-primary-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="bg-bolt-elements-button-primary-background rounded-lg px-4 py-2 ms-2 transition-colors duration-200 hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-button-primary-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isVerifying ? (
               <>
-                <div className="i-ph:spinner animate-spin mr-2" />
-                Verifying...
+                <div className="i-ph:spinner animate-spin ms-2" />
+                جارٍ التحقق...
               </>
             ) : (
-              'Connect'
+              'اتصال'
             )}
           </button>
         ) : (
           <button
             onClick={handleDisconnect}
-            className="bg-bolt-elements-button-danger-background rounded-lg px-4 py-2 mr-2 transition-colors duration-200 hover:bg-bolt-elements-button-danger-backgroundHover text-bolt-elements-button-danger-text"
+            className="bg-bolt-elements-button-danger-background rounded-lg px-4 py-2 ms-2 transition-colors duration-200 hover:bg-bolt-elements-button-danger-backgroundHover text-bolt-elements-button-danger-text"
           >
-            Disconnect
+            قطع الاتصال
           </button>
         )}
         {isConnected && (
           <span className="text-sm text-green-600 flex items-center">
-            <div className="i-ph:check-circle mr-1" />
-            Connected to GitHub
+            <div className="i-ph:check-circle ms-1" />
+            متصل بـ GitHub
           </span>
         )}
       </div>

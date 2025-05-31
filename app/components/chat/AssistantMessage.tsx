@@ -22,7 +22,7 @@ export const AssistantMessage = memo(({ content, annotations }: AssistantMessage
     <div className="overflow-hidden w-full">
       {usage && (
         <div className="text-sm text-bolt-elements-textSecondary mb-2">
-          Tokens: {usage.totalTokens} (prompt: {usage.promptTokens}, completion: {usage.completionTokens})
+          التوكنات: {usage.totalTokens} (الموجه: {usage.promptTokens}، الإكمال: {usage.completionTokens})
         </div>
       )}
       <Markdown html>{content}</Markdown>

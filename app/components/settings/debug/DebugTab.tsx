@@ -385,7 +385,7 @@ export default function DebugTab() {
 
     try {
       setIsCheckingUpdate(true);
-      setUpdateMessage('Checking for updates...');
+      setUpdateMessage('جارٍ التحقق من وجود تحديثات...');
 
       const branchToCheck = isLatestBranch ? 'main' : 'stable';
       console.log(`[Debug] Checking for updates against ${branchToCheck} branch`);
@@ -397,15 +397,15 @@ export default function DebugTab() {
 
       if (remoteCommitHash !== currentCommitHash) {
         setUpdateMessage(
-          `Update available from ${branchToCheck} branch!\n` +
-            `Current: ${currentCommitHash.slice(0, 7)}\n` +
-            `Latest: ${remoteCommitHash.slice(0, 7)}`,
+          `التحديث متوفر من الفرع ${branchToCheck}!\n` +
+            `الحالي: ${currentCommitHash.slice(0, 7)}\n` +
+            `الأحدث: ${remoteCommitHash.slice(0, 7)}`,
         );
       } else {
-        setUpdateMessage(`You are on the latest version from the ${branchToCheck} branch`);
+        setUpdateMessage(`أنت على أحدث إصدار من الفرع ${branchToCheck}`);
       }
     } catch (error) {
-      setUpdateMessage('Failed to check for updates');
+      setUpdateMessage('فشل التحقق من وجود تحديثات');
       console.error('[Debug] Failed to check for updates:', error);
     } finally {
       setIsCheckingUpdate(false);
@@ -433,20 +433,20 @@ export default function DebugTab() {
     };
 
     navigator.clipboard.writeText(JSON.stringify(debugInfo, null, 2)).then(() => {
-      toast.success('Debug information copied to clipboard!');
+      toast.success('تم نسخ معلومات التصحيح إلى الحافظة!');
     });
   }, [activeProviders, systemInfo, isLatestBranch]);
 
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-bolt-elements-textPrimary">Debug Information</h3>
+        <h3 className="text-lg font-medium text-bolt-elements-textPrimary">معلومات التصحيح</h3>
         <div className="flex gap-2">
           <button
             onClick={handleCopyToClipboard}
             className="bg-bolt-elements-button-primary-background rounded-lg px-4 py-2 transition-colors duration-200 hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-button-primary-text"
           >
-            Copy Debug Info
+            نسخ معلومات التصحيح
           </button>
           <button
             onClick={handleCheckForUpdate}
@@ -455,7 +455,7 @@ export default function DebugTab() {
               ${!isCheckingUpdate ? 'hover:bg-bolt-elements-button-primary-backgroundHover' : 'opacity-75 cursor-not-allowed'}
               text-bolt-elements-button-primary-text`}
           >
-            {isCheckingUpdate ? 'Checking...' : 'Check for Updates'}
+            {isCheckingUpdate ? 'جارٍ التحقق...' : 'التحقق من وجود تحديثات'}
           </button>
         </div>
       </div>
@@ -463,23 +463,23 @@ export default function DebugTab() {
       {updateMessage && (
         <div
           className={`bg-bolt-elements-surface rounded-lg p-3 ${
-            updateMessage.includes('Update available') ? 'border-l-4 border-yellow-400' : ''
+            updateMessage.includes('التحديث متوفر') ? 'border-r-4 border-yellow-400' : ''
           }`}
         >
           <p className="text-bolt-elements-textSecondary whitespace-pre-line">{updateMessage}</p>
-          {updateMessage.includes('Update available') && (
+          {updateMessage.includes('التحديث متوفر') && (
             <div className="mt-3 text-sm">
-              <p className="font-medium text-bolt-elements-textPrimary">To update:</p>
-              <ol className="list-decimal ml-4 mt-1 text-bolt-elements-textSecondary">
+              <p className="font-medium text-bolt-elements-textPrimary">للتحديث:</p>
+              <ol className="list-decimal ms-4 mt-1 text-bolt-elements-textSecondary">
                 <li>
-                  Pull the latest changes:{' '}
+                  اسحب أحدث التغييرات:{' '}
                   <code className="bg-bolt-elements-surface-hover px-1 rounded">git pull upstream main</code>
                 </li>
                 <li>
-                  Install any new dependencies:{' '}
+                  ثبت أي تبعيات جديدة:{' '}
                   <code className="bg-bolt-elements-surface-hover px-1 rounded">pnpm install</code>
                 </li>
-                <li>Restart the application</li>
+                <li>أعد تشغيل التطبيق</li>
               </ol>
             </div>
           )}
@@ -488,61 +488,61 @@ export default function DebugTab() {
 
       <section className="space-y-4">
         <div>
-          <h4 className="text-md font-medium text-bolt-elements-textPrimary mb-2">System Information</h4>
+          <h4 className="text-md font-medium text-bolt-elements-textPrimary mb-2">معلومات النظام</h4>
           <div className="bg-bolt-elements-surface rounded-lg p-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Operating System</p>
+                <p className="text-xs text-bolt-elements-textSecondary">نظام التشغيل</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.os}</p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Device Type</p>
+                <p className="text-xs text-bolt-elements-textSecondary">نوع الجهاز</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.deviceType}</p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Browser</p>
+                <p className="text-xs text-bolt-elements-textSecondary">المتصفح</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.browser}</p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Display</p>
+                <p className="text-xs text-bolt-elements-textSecondary">الشاشة</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">
                   {systemInfo.screen} ({systemInfo.colorDepth}) @{systemInfo.pixelRatio}x
                 </p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Connection</p>
+                <p className="text-xs text-bolt-elements-textSecondary">الاتصال</p>
                 <p className="text-sm font-medium flex items-center gap-2">
                   <span
                     className={`inline-block w-2 h-2 rounded-full ${systemInfo.online ? 'bg-green-500' : 'bg-red-500'}`}
                   />
                   <span className={`${systemInfo.online ? 'text-green-600' : 'text-red-600'}`}>
-                    {systemInfo.online ? 'Online' : 'Offline'}
+                    {systemInfo.online ? 'متصل' : 'غير متصل'}
                   </span>
                 </p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Screen Resolution</p>
+                <p className="text-xs text-bolt-elements-textSecondary">دقة الشاشة</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.screen}</p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Language</p>
+                <p className="text-xs text-bolt-elements-textSecondary">اللغة</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.language}</p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">Timezone</p>
+                <p className="text-xs text-bolt-elements-textSecondary">المنطقة الزمنية</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.timezone}</p>
               </div>
               <div>
-                <p className="text-xs text-bolt-elements-textSecondary">CPU Cores</p>
+                <p className="text-xs text-bolt-elements-textSecondary">أنوية المعالج</p>
                 <p className="text-sm font-medium text-bolt-elements-textPrimary">{systemInfo.cores}</p>
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-bolt-elements-surface-hover">
-              <p className="text-xs text-bolt-elements-textSecondary">Version</p>
+              <p className="text-xs text-bolt-elements-textSecondary">الإصدار</p>
               <p className="text-sm font-medium text-bolt-elements-textPrimary font-mono">
                 {connitJson.commit.slice(0, 7)}
-                <span className="ml-2 text-xs text-bolt-elements-textSecondary">
-                  (v{versionTag || '0.0.1'}) - {isLatestBranch ? 'nightly' : 'stable'}
+                <span className="ms-2 text-xs text-bolt-elements-textSecondary">
+                  (v{versionTag || '0.0.1'}) - {isLatestBranch ? 'ليلي' : 'مستقر'}
                 </span>
               </p>
             </div>
@@ -550,7 +550,7 @@ export default function DebugTab() {
         </div>
 
         <div>
-          <h4 className="text-md font-medium text-bolt-elements-textPrimary mb-2">Local LLM Status</h4>
+          <h4 className="text-md font-medium text-bolt-elements-textPrimary mb-2">حالة LLM المحلي</h4>
           <div className="bg-bolt-elements-surface rounded-lg">
             <div className="grid grid-cols-1 divide-y">
               {activeProviders.map((provider) => (
@@ -579,7 +579,7 @@ export default function DebugTab() {
                           provider.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {provider.enabled ? 'Enabled' : 'Disabled'}
+                        {provider.enabled ? 'مفعل' : 'معطل'}
                       </span>
                       {provider.enabled && (
                         <span
@@ -587,21 +587,21 @@ export default function DebugTab() {
                             provider.isRunning ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {provider.isRunning ? 'Running' : 'Not Running'}
+                          {provider.isRunning ? 'يعمل' : 'لا يعمل'}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="pl-5 flex flex-col space-y-1 text-xs">
+                  <div className="ps-5 flex flex-col space-y-1 text-xs"> {/* Changed pl-5 to ps-5 */}
                     {/* Status Details */}
                     <div className="flex flex-wrap gap-2">
                       <span className="text-bolt-elements-textSecondary">
-                        Last checked: {new Date(provider.lastChecked).toLocaleTimeString()}
+                        آخر فحص: {new Date(provider.lastChecked).toLocaleTimeString()}
                       </span>
                       {provider.responseTime && (
                         <span className="text-bolt-elements-textSecondary">
-                          Response time: {Math.round(provider.responseTime)}ms
+                          زمن الاستجابة: {Math.round(provider.responseTime)}ms
                         </span>
                       )}
                     </div>
@@ -609,16 +609,16 @@ export default function DebugTab() {
                     {/* Error Message */}
                     {provider.error && (
                       <div className="mt-1 text-red-600 bg-red-50 rounded-md p-2">
-                        <span className="font-medium">Error:</span> {provider.error}
+                        <span className="font-medium">خطأ:</span> {provider.error}
                       </div>
                     )}
 
                     {/* Connection Info */}
                     {provider.url && (
                       <div className="text-bolt-elements-textSecondary">
-                        <span className="font-medium">Endpoints checked:</span>
-                        <ul className="list-disc list-inside pl-2 mt-1">
-                          <li>{provider.url} (root)</li>
+                        <span className="font-medium">النقاط الطرفية التي تم فحصها:</span>
+                        <ul className="list-disc list-inside ps-2 mt-1"> {/* Changed pl-2 to ps-2 */}
+                          <li>{provider.url} (الجذر)</li>
                           <li>{provider.url}/api/health</li>
                           <li>{provider.url}/v1/models</li>
                         </ul>
@@ -628,7 +628,7 @@ export default function DebugTab() {
                 </div>
               ))}
               {activeProviders.length === 0 && (
-                <div className="p-4 text-center text-bolt-elements-textSecondary">No local LLMs configured</div>
+                <div className="p-4 text-center text-bolt-elements-textSecondary">لا توجد LLMs محلية مكونة</div>
               )}
             </div>
           </div>

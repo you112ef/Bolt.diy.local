@@ -17,13 +17,13 @@ export class PromptLibrary {
     }
   > = {
     default: {
-      label: 'Default Prompt',
-      description: 'This is the battle tested default system Prompt',
+      label: 'الموجه الافتراضي',
+      description: 'هذا هو موجه النظام الافتراضي الذي تم اختباره ميدانيًا',
       get: (options) => getSystemPrompt(options.cwd),
     },
     optimized: {
-      label: 'Optimized Prompt (experimental)',
-      description: 'an Experimental version of the prompt for lower token usage',
+      label: 'موجه محسن (تجريبي)',
+      description: 'نسخة تجريبية من الموجه لاستخدام أقل للتوكنات',
       get: (options) => optimized(options),
     },
   };

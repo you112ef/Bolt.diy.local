@@ -5,7 +5,6 @@ import { AutomationView } from '~/components/sections/AutomationView';
 import { TemplatesView } from '~/components/sections/TemplatesView';
 import { AiAssistantView } from '~/components/sections/AiAssistantView';
 import { SettingsView } from '~/components/sections/SettingsView';
-// import { Header } from '~/components/header/Header'; // Commented out for now
 import BackgroundRays from '~/components/ui/BackgroundRays';
 
 export const meta: MetaFunction = () => {
@@ -43,7 +42,6 @@ export default function Index() {
       style={{ paddingBottom: '60px' }} // Adjust if nav height changes
     >
       <BackgroundRays />
-      {/* <Header /> */} {/* Commented out for now */}
       <div style={{ flex: 1, overflowY: 'auto' }}> {/* Ensure content area scrolls */}
         {renderView()}
       </div>

@@ -48,7 +48,7 @@ export default function DataTab() {
     if (!db) {
       const error = new Error('Database is not available');
       logStore.logError('Failed to export chats - DB unavailable', error);
-      toast.error('Database is not available');
+      toast.error('قاعدة البيانات غير متاحة');
 
       return;
     }
@@ -62,16 +62,16 @@ export default function DataTab() {
 
       downloadAsJson(exportData, `all-chats-${new Date().toISOString()}.json`);
       logStore.logSystem('Chats exported successfully', { count: allChats.length });
-      toast.success('Chats exported successfully');
+      toast.success('تم تصدير الدردشات بنجاح');
     } catch (error) {
       logStore.logError('Failed to export chats', error);
-      toast.error('Failed to export chats');
+      toast.error('فشل تصدير الدردشات');
       console.error(error);
     }
   };
 
   const handleDeleteAllChats = async () => {
-    const confirmDelete = window.confirm('Are you sure you want to delete all chats? This action cannot be undone.');
+    const confirmDelete = window.confirm('هل أنت متأكد أنك تريد حذف جميع الدردشات؟ لا يمكن التراجع عن هذا الإجراء.');
 
     if (!confirmDelete) {
       return;
@@ -80,7 +80,7 @@ export default function DataTab() {
     if (!db) {
       const error = new Error('Database is not available');
       logStore.logError('Failed to delete chats - DB unavailable', error);
-      toast.error('Database is not available');
+      toast.error('قاعدة البيانات غير متاحة');
 
       return;
     }
@@ -91,11 +91,11 @@ export default function DataTab() {
       const allChats = await getAll(db);
       await Promise.all(allChats.map((chat) => deleteById(db!, chat.id)));
       logStore.logSystem('All chats deleted successfully', { count: allChats.length });
-      toast.success('All chats deleted successfully');
+      toast.success('تم حذف جميع الدردشات بنجاح');
       navigate('/', { replace: true });
     } catch (error) {
       logStore.logError('Failed to delete chats', error);
-      toast.error('Failed to delete chats');
+      toast.error('فشل حذف الدردشات');
       console.error(error);
     } finally {
       setIsDeleting(false);
@@ -116,11 +116,11 @@ export default function DataTab() {
       selectedProvider: Cookies.get('selectedProvider'),
       githubUsername: Cookies.get('githubUsername'),
       githubToken: Cookies.get('githubToken'),
-      bolt_theme: localStorage.getItem('bolt_theme'),
+      bolt_theme: localStorage.getItem('yousef_n8n_theme'), // Updated theme key
     };
 
-    downloadAsJson(settings, 'bolt-settings.json');
-    toast.success('Settings exported successfully');
+    downloadAsJson(settings, 'yousef-n8n-settings.json'); // Updated filename
+    toast.success('تم تصدير الإعدادات بنجاح');
   };
 
   const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +137,7 @@ export default function DataTab() {
         const settings = JSON.parse(e.target?.result as string);
 
         Object.entries(settings).forEach(([key, value]) => {
-          if (key === 'bolt_theme') {
+          if (key === 'yousef_n8n_theme') { // Updated theme key
             if (value) {
               localStorage.setItem(key, value as string);
             }
@@ -146,9 +146,9 @@ export default function DataTab() {
           }
         });
 
-        toast.success('Settings imported successfully. Please refresh the page for changes to take effect.');
+        toast.success('تم استيراد الإعدادات بنجاح. يرجى تحديث الصفحة لتطبيق التغييرات.');
       } catch (error) {
-        toast.error('Failed to import settings. Make sure the file is a valid JSON file.');
+        toast.error('فشل استيراد الإعدادات. تأكد من أن الملف هو ملف JSON صالح.');
         console.error('Failed to import settings:', error);
       }
     };
@@ -168,7 +168,7 @@ export default function DataTab() {
     template.TOGETHER_API_BASE_URL = '';
 
     downloadAsJson(template, 'api-keys-template.json');
-    toast.success('API keys template exported successfully');
+    toast.success('تم تصدير قالب مفاتيح API بنجاح');
   };
 
   const handleImportApiKeys = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,14 +204,14 @@ export default function DataTab() {
             Cookies.set(`${provider}_API_KEY`, key);
           });
 
-          toast.success(`Successfully imported ${importedCount} API keys/URLs. Refreshing page to apply changes...`);
+          toast.success(`تم بنجاح استيراد ${importedCount} من مفاتيح API/عناوين URL. جارٍ تحديث الصفحة لتطبيق التغييرات...`);
 
           // Reload the page after a short delay to allow the toast to be seen
           setTimeout(() => {
             window.location.reload();
           }, 1500);
         } else {
-          toast.warn('No valid API keys found in the file');
+          toast.warn('لم يتم العثور على مفاتيح API صالحة في الملف');
         }
 
         // Set base URLs if they exist
@@ -223,7 +223,7 @@ export default function DataTab() {
           },
         );
       } catch (error) {
-        toast.error('Failed to import API keys. Make sure the file is a valid JSON file.');
+        toast.error('فشل استيراد مفاتيح API. تأكد من أن الملف هو ملف JSON صالح.');
         console.error('Failed to import API keys:', error);
       }
     };
@@ -234,18 +234,18 @@ export default function DataTab() {
   return (
     <div className="p-4 bg-bolt-elements-bg-depth-2 border border-bolt-elements-borderColor rounded-lg mb-4">
       <div className="mb-6">
-        <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-4">Data Management</h3>
+        <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-4">إدارة البيانات</h3>
         <div className="space-y-8">
           <div className="flex flex-col gap-4">
             <div>
-              <h4 className="text-bolt-elements-textPrimary mb-2">Chat History</h4>
-              <p className="text-sm text-bolt-elements-textSecondary mb-4">Export or delete all your chat history.</p>
+              <h4 className="text-bolt-elements-textPrimary mb-2">سجل الدردشات</h4>
+              <p className="text-sm text-bolt-elements-textSecondary mb-4">تصدير أو حذف كل سجل دردشاتك.</p>
               <div className="flex gap-4">
                 <button
                   onClick={handleExportAllChats}
                   className="px-4 py-2 bg-bolt-elements-button-primary-background hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-textPrimary rounded-lg transition-colors"
                 >
-                  Export All Chats
+                  تصدير كل الدردشات
                 </button>
                 <button
                   onClick={handleDeleteAllChats}
@@ -255,44 +255,44 @@ export default function DataTab() {
                     isDeleting ? 'opacity-50 cursor-not-allowed' : '',
                   )}
                 >
-                  {isDeleting ? 'Deleting...' : 'Delete All Chats'}
+                  {isDeleting ? 'جارٍ الحذف...' : 'حذف كل الدردشات'}
                 </button>
               </div>
             </div>
 
             <div>
-              <h4 className="text-bolt-elements-textPrimary mb-2">Settings Backup</h4>
+              <h4 className="text-bolt-elements-textPrimary mb-2">نسخ احتياطي للإعدادات</h4>
               <p className="text-sm text-bolt-elements-textSecondary mb-4">
-                Export your settings to a JSON file or import settings from a previously exported file.
+                تصدير إعداداتك إلى ملف JSON أو استيراد الإعدادات من ملف تم تصديره مسبقًا.
               </p>
               <div className="flex gap-4">
                 <button
                   onClick={handleExportSettings}
                   className="px-4 py-2 bg-bolt-elements-button-primary-background hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-textPrimary rounded-lg transition-colors"
                 >
-                  Export Settings
+                  تصدير الإعدادات
                 </button>
                 <label className="px-4 py-2 bg-bolt-elements-button-primary-background hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-textPrimary rounded-lg transition-colors cursor-pointer">
-                  Import Settings
+                  استيراد الإعدادات
                   <input type="file" accept=".json" onChange={handleImportSettings} className="hidden" />
                 </label>
               </div>
             </div>
 
             <div>
-              <h4 className="text-bolt-elements-textPrimary mb-2">API Keys Management</h4>
+              <h4 className="text-bolt-elements-textPrimary mb-2">إدارة مفاتيح API</h4>
               <p className="text-sm text-bolt-elements-textSecondary mb-4">
-                Import API keys from a JSON file or download a template to fill in your keys.
+                استيراد مفاتيح API من ملف JSON أو تنزيل قالب لملء مفاتيحك.
               </p>
               <div className="flex gap-4">
                 <button
                   onClick={handleExportApiKeyTemplate}
                   className="px-4 py-2 bg-bolt-elements-button-primary-background hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-textPrimary rounded-lg transition-colors"
                 >
-                  Download Template
+                  تنزيل القالب
                 </button>
                 <label className="px-4 py-2 bg-bolt-elements-button-primary-background hover:bg-bolt-elements-button-primary-backgroundHover text-bolt-elements-textPrimary rounded-lg transition-colors cursor-pointer">
-                  Import API Keys
+                  استيراد مفاتيح API
                   <input type="file" accept=".json" onChange={handleImportApiKeys} className="hidden" />
                 </label>
               </div>
