@@ -90,7 +90,7 @@ $code-font-size: 13px;
   }
 
   pre {
-    padding: 20px 16px;
+    padding: 20px; // Changed padding
     border-radius: 6px;
   }
 
@@ -107,6 +107,11 @@ $code-font-size: 13px;
     padding: 0 1em;
     color: var(--bolt-elements-textTertiary);
     border-left: 0.25em solid var(--bolt-elements-borderColor);
+
+    :global(html[dir="rtl"]) & {
+      border-left: none;
+      border-right: 0.25em solid var(--bolt-elements-borderColor);
+    }
   }
 
   :is(ul, ol) {
@@ -114,6 +119,11 @@ $code-font-size: 13px;
       padding-left: 2em;
       margin-block-start: 0;
       margin-block-end: 16px;
+
+      :global(html[dir="rtl"]) & {
+        padding-left: 0;
+        padding-right: 2em;
+      }
     }
   }
 
@@ -160,7 +170,7 @@ $code-font-size: 13px;
     margin-block-end: 16px;
 
     :is(th, td) {
-      padding: 6px 13px;
+      padding: 6px 10px; // Changed padding
       border: 1px solid #dfe2e5;
     }
 
