@@ -25,10 +25,10 @@ export function HistoryItem({ item, onDelete, onDuplicate, exportChat }: History
     });
 
   const renderDescriptionForm = (
-    <form onSubmit={handleSubmit} className="flex-1 flex items-center">
+    <form onSubmit={handleSubmit} className="flex-1 flex items-center rtl:flex-row-reverse">
       <input
         type="text"
-        className="flex-1 bg-bolt-elements-background-depth-1 text-bolt-elements-textPrimary rounded px-2 mr-2"
+        className="flex-1 bg-bolt-elements-background-depth-1 text-bolt-elements-textPrimary rounded px-2 ms-2 me-2 rtl:ms-0 rtl:me-2" // Adjusted margins for RTL
         autoFocus
         value={currentDescription}
         onChange={handleChange}
@@ -46,25 +46,25 @@ export function HistoryItem({ item, onDelete, onDuplicate, exportChat }: History
   return (
     <div
       className={classNames(
-        'group rounded-md text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary hover:bg-bolt-elements-background-depth-3 overflow-hidden flex justify-between items-center px-2 py-1',
+        'group rounded-md text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary hover:bg-bolt-elements-background-depth-3 overflow-hidden flex justify-between items-center px-2 py-1 rtl:flex-row-reverse',
         { '[&&]:text-bolt-elements-textPrimary bg-bolt-elements-background-depth-3': isActiveChat },
       )}
     >
       {editing ? (
         renderDescriptionForm
       ) : (
-        <a href={`/chat/${item.urlId}`} className="flex w-full relative truncate block">
+        <a href={`/chat/${item.urlId}`} className="flex w-full relative truncate block rtl:flex-row-reverse">
           {currentDescription}
           <div
             className={classNames(
-              'absolute right-0 z-1 top-0 bottom-0 bg-gradient-to-l from-bolt-elements-background-depth-2 group-hover:from-bolt-elements-background-depth-3 box-content pl-3 to-transparent w-10 flex justify-end group-hover:w-22 group-hover:from-99%',
+              'absolute z-1 top-0 bottom-0 bg-gradient-to-l rtl:bg-gradient-to-r from-bolt-elements-background-depth-2 group-hover:from-bolt-elements-background-depth-3 box-content to-transparent w-10 flex justify-end group-hover:w-22 group-hover:from-99% right-0 rtl:left-0 rtl:right-auto ps-3 rtl:pe-3', // Adjusted for RTL: gradient, position, padding
               { 'from-bolt-elements-background-depth-3 w-10 ': isActiveChat },
             )}
           >
-            <div className="flex items-center p-1 text-bolt-elements-textSecondary opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center p-1 text-bolt-elements-textSecondary opacity-0 group-hover:opacity-100 transition-opacity rtl:flex-row-reverse">
               <ChatActionButton
                 toolTipContent="Export chat"
-                icon="i-ph:download-simple"
+                icon="i-ph:download-simple" // Symmetrical icon
                 onClick={(event) => {
                   event.preventDefault();
                   exportChat(item.id);
@@ -88,7 +88,7 @@ export function HistoryItem({ item, onDelete, onDuplicate, exportChat }: History
               <Dialog.Trigger asChild>
                 <ChatActionButton
                   toolTipContent="Delete chat"
-                  icon="i-ph:trash"
+                  icon="i-ph:trash" // Symmetrical icon
                   className="[&&]:hover:text-bolt-elements-button-danger-text"
                   onClick={(event) => {
                     event.preventDefault();
@@ -125,7 +125,7 @@ const ChatActionButton = forwardRef(
         <button
           ref={ref}
           type="button"
-          className={`scale-110 mr-2 hover:text-bolt-elements-item-contentAccent ${icon} ${className ? className : ''}`}
+          className={`scale-110 hover:text-bolt-elements-item-contentAccent ${icon} ${className ? className : ''} me-2 rtl:ms-2 rtl:me-0`} // Adjusted margin for RTL
           onClick={onClick}
         />
       </WithTooltip>

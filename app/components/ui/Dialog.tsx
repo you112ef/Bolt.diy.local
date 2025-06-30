@@ -50,7 +50,7 @@ export const DialogButton = memo(({ type, children, onClick }: DialogButtonProps
   return (
     <button
       className={classNames(
-        'inline-flex h-[35px] items-center justify-center rounded-lg px-4 text-sm leading-none focus:outline-none',
+        'interactive-button inline-flex h-[35px] items-center justify-center rounded-lg px-4 text-sm leading-none focus:outline-none', // Added .interactive-button
         {
           'bg-bolt-elements-button-primary-background text-bolt-elements-button-primary-text hover:bg-bolt-elements-button-primary-backgroundHover':
             type === 'primary',
@@ -71,8 +71,8 @@ export const DialogTitle = memo(({ className, children, ...props }: RadixDialog.
   return (
     <RadixDialog.Title
       className={classNames(
-        'px-5 py-4 flex items-center justify-between border-b border-bolt-elements-borderColor text-lg font-semibold leading-6 text-bolt-elements-textPrimary',
-        className,
+        'px-5 py-4 flex items-center justify-between rtl:flex-row-reverse border-b border-bolt-elements-borderColor text-lg font-semibold leading-6 text-bolt-elements-textPrimary',
+        className, // Added rtl:flex-row-reverse for potential elements within title
       )}
       {...props}
     >
@@ -84,7 +84,7 @@ export const DialogTitle = memo(({ className, children, ...props }: RadixDialog.
 export const DialogDescription = memo(({ className, children, ...props }: RadixDialog.DialogDescriptionProps) => {
   return (
     <RadixDialog.Description
-      className={classNames('px-5 py-4 text-bolt-elements-textPrimary text-md', className)}
+      className={classNames('px-5 py-4 text-bolt-elements-textPrimary text-md rtl:text-right', className)} // Added rtl:text-right
       {...props}
     >
       {children}
@@ -124,7 +124,7 @@ export const Dialog = memo(({ className, children, onBackdrop, onClose }: Dialog
         >
           {children}
           <RadixDialog.Close asChild onClick={onClose}>
-            <IconButton icon="i-ph:x" className="absolute top-[10px] right-[10px]" />
+            <IconButton icon="i-ph:x" className="absolute top-[10px] right-[10px] rtl:left-[10px] rtl:right-auto" />
           </RadixDialog.Close>
         </motion.div>
       </RadixDialog.Content>

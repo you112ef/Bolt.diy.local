@@ -14,7 +14,7 @@ export const PanelHeaderButton = memo(
     return (
       <button
         className={classNames(
-          'flex items-center shrink-0 gap-1.5 px-1.5 rounded-md py-0.5 text-bolt-elements-item-contentDefault bg-transparent enabled:hover:text-bolt-elements-item-contentActive enabled:hover:bg-bolt-elements-item-backgroundActive disabled:cursor-not-allowed',
+          'interactive-button flex items-center shrink-0 gap-1.5 px-1.5 rounded-md py-1 text-bolt-elements-item-contentDefault bg-transparent enabled:hover:text-bolt-elements-item-contentActive enabled:hover:bg-bolt-elements-item-backgroundActive disabled:cursor-not-allowed', // Added .interactive-button, changed py-0.5 to py-1
           {
             [classNames('opacity-30', disabledClassName)]: disabled,
           },

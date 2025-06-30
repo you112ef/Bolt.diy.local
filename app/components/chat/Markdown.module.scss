@@ -71,9 +71,14 @@ $code-font-size: 13px;
     color: var(--bolt-elements-messages-linkColor);
     text-decoration: none;
     cursor: pointer;
+    transition: color 0.15s var(--bolt-ease-cubic-bezier), text-decoration-color 0.15s var(--bolt-ease-cubic-bezier); /* Added from .interactive-link */
+    text-decoration-color: transparent; /* Prepare for underline animation */
 
-    &:hover {
+    &:hover,
+    &:focus { /* Added :focus state for accessibility */
       text-decoration: underline;
+      text-decoration-color: var(--bolt-elements-messages-linkColor); /* Underline with link color on hover/focus */
+      /* color: var(--bolt-elements-messages-linkColor); */ /* Color is already set, hover might need different if design requires */
     }
   }
 
@@ -167,5 +172,31 @@ $code-font-size: 13px;
     tr:nth-child(2n) {
       background-color: #f6f8fa;
     }
+  }
+}
+
+/* RTL STYLES */
+[dir='rtl'] .MarkdownContent {
+  text-align: right;
+
+  h1,
+  h2 {
+    /* border-bottom is fine */
+  }
+
+  blockquote {
+    border-left: none;
+    border-right: 0.25em solid var(--bolt-elements-borderColor);
+    padding: 0 1em 0 0; /* Adjusted padding for RTL */
+  }
+
+  :is(ul, ol) {
+    padding-left: 0;
+    padding-right: 2em; /* Adjusted padding for RTL */
+  }
+
+  /* For table cell text alignment */
+  table :is(th, td) {
+    text-align: right;
   }
 }

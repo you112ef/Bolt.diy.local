@@ -27,8 +27,8 @@ export const Switch = memo(({ className, onCheckedChange, checked }: SwitchProps
           'block h-5 w-5 rounded-full bg-white',
           'shadow-lg shadow-black/20',
           'transition-transform duration-200 ease-in-out',
-          'translate-x-0.5',
-          'data-[state=checked]:translate-x-[1.375rem]',
+          'translate-x-0.5 rtl:-translate-x-0.5', // Adjusted for RTL initial position
+          'data-[state=checked]:translate-x-[1.375rem] rtl:data-[state=checked]:-translate-x-[1.375rem]', // Adjusted for RTL checked position
           'will-change-transform',
         )}
       />

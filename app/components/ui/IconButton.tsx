@@ -42,11 +42,20 @@ export const IconButton = memo(
       }: IconButtonProps,
       ref: ForwardedRef<HTMLButtonElement>,
     ) => {
+      const sizePadding = {
+        sm: 'p-2', // Increased padding for smaller icons
+        md: 'p-1.5', // Slightly increased
+        lg: 'p-1',
+        xl: 'p-1',
+        xxl: 'p-1',
+      };
+
       return (
         <button
           ref={ref}
           className={classNames(
-            'flex items-center text-bolt-elements-item-contentDefault bg-transparent enabled:hover:text-bolt-elements-item-contentActive rounded-md p-1 enabled:hover:bg-bolt-elements-item-backgroundActive disabled:cursor-not-allowed',
+            'interactive-button flex items-center text-bolt-elements-item-contentDefault bg-transparent enabled:hover:text-bolt-elements-item-contentActive rounded-md disabled:cursor-not-allowed',
+            sizePadding[size], // Apply dynamic padding
             {
               [classNames('opacity-30', disabledClassName)]: disabled,
             },

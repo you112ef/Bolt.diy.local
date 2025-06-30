@@ -86,7 +86,7 @@ export const TerminalTabs = memo(() => {
     >
       <div className="h-full">
         <div className="bg-bolt-elements-terminals-background h-full flex flex-col">
-          <div className="flex items-center bg-bolt-elements-background-depth-2 border-y border-bolt-elements-borderColor gap-1.5 min-h-[34px] p-2">
+          <div className="flex items-center rtl:flex-row-reverse bg-bolt-elements-background-depth-2 border-y border-bolt-elements-borderColor gap-1.5 min-h-[34px] p-2">
             {Array.from({ length: terminalCount + 1 }, (_, index) => {
               const isActive = activeTerminal === index;
 
@@ -96,7 +96,7 @@ export const TerminalTabs = memo(() => {
                     <button
                       key={index}
                       className={classNames(
-                        'flex items-center text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full',
+                        'flex items-center rtl:flex-row-reverse text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full', // Added rtl:flex-row-reverse
                         {
                           'bg-bolt-elements-terminals-buttonBackground text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary':
                             isActive,
@@ -114,7 +114,7 @@ export const TerminalTabs = memo(() => {
                       <button
                         key={index}
                         className={classNames(
-                          'flex items-center text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full',
+                          'flex items-center rtl:flex-row-reverse text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full', // Added rtl:flex-row-reverse
                           {
                             'bg-bolt-elements-terminals-buttonBackground text-bolt-elements-textPrimary': isActive,
                             'bg-bolt-elements-background-depth-2 text-bolt-elements-textSecondary hover:bg-bolt-elements-terminals-buttonBackground':
@@ -132,9 +132,10 @@ export const TerminalTabs = memo(() => {
               );
             })}
             {terminalCount < MAX_TERMINALS && <IconButton icon="i-ph:plus" size="md" onClick={addTerminal} />}
+            {/* IconButton for close already uses ml-auto which handles RTL */}
             <IconButton
-              className="ml-auto"
-              icon="i-ph:caret-down"
+              className="ml-auto" // This will become margin-start: auto in RTL, which is correct
+              icon="i-ph:caret-down" // Symmetrical in this context
               title="Close"
               size="md"
               onClick={() => workbenchStore.toggleTerminal(false)}

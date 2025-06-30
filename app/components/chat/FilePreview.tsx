@@ -17,12 +17,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files, imageDataList, onRemov
         <div key={file.name + file.size} className="mr-2 relative">
           {imageDataList[index] && (
             <div className="relative pt-4 pr-4">
-              <img src={imageDataList[index]} alt={file.name} className="max-h-20" />
+              <img loading="lazy" src={imageDataList[index]} alt={file.name} className="max-h-20" />
               <button
                 onClick={() => onRemove(index)}
-                className="absolute top-1 right-1 z-10 bg-black rounded-full w-5 h-5 shadow-md hover:bg-gray-900 transition-colors flex items-center justify-center"
+                className="absolute top-0 right-0 z-10 bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full w-6 h-6 shadow-md transition-colors flex items-center justify-center" // Increased size, adjusted positioning slightly for larger target
               >
-                <div className="i-ph:x w-3 h-3 text-gray-200" />
+                <div className="i-ph:x w-3.5 h-3.5 text-white" /> {/* Slightly larger icon, white for better contrast on dark overlay */}
               </button>
             </div>
           )}

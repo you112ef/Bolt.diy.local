@@ -55,6 +55,12 @@ export const EditorPanel = memo(
 
     const theme = useStore(themeStore);
     const showTerminal = useStore(workbenchStore.showTerminal);
+    const [isRTL, setIsRTL] = useState(false);
+
+    useEffect(() => {
+      // Assuming html dir attribute is set for RTL
+      setIsRTL(document.documentElement.dir === 'rtl');
+    }, []);
 
     const activeFileSegments = useMemo(() => {
       if (!editorDocument) {
@@ -68,61 +74,81 @@ export const EditorPanel = memo(
       return editorDocument !== undefined && unsavedFiles?.has(editorDocument.filePath);
     }, [editorDocument, unsavedFiles]);
 
+    const fileTreePanel = (
+      <Panel defaultSize={20} minSize={10} collapsible order={1}>
+        <div className="flex flex-col border-r rtl:border-l rtl:border-r-0 border-bolt-elements-borderColor h-full">
+          <PanelHeader className="rtl:flex-row-reverse">
+            <div className="i-ph:tree-structure-duotone shrink-0" />
+            Files
+          </PanelHeader>
+          <FileTree
+            className="h-full"
+            files={files}
+            hideRoot
+            unsavedFiles={unsavedFiles}
+            rootFolder={WORK_DIR}
+            selectedFile={selectedFile}
+            onFileSelect={onFileSelect}
+          />
+        </div>
+      </Panel>
+    );
+
+    const editorContentPanel = (
+      <Panel className="flex flex-col" defaultSize={80} minSize={20} order={2}>
+        <PanelHeader className="overflow-x-auto">
+          {activeFileSegments?.length && (
+            <div className="flex items-center flex-1 text-sm rtl:flex-row-reverse">
+              <FileBreadcrumb pathSegments={activeFileSegments} files={files} onFileSelect={onFileSelect} />
+              {activeFileUnsaved && (
+                // ml-auto correctly pushes to the other side in RTL.
+                // Adjust margin for the button group container for RTL.
+                <div className="flex gap-1 ml-auto ms-auto me-0 rtl:-ms-1.5 rtl:me-auto">
+                  <PanelHeaderButton onClick={onFileSave}>
+                    <div className="i-ph:floppy-disk-duotone" />
+                    Save
+                  </PanelHeaderButton>
+                  <PanelHeaderButton onClick={onFileReset}>
+                    <div className="i-ph:clock-counter-clockwise-duotone" />
+                    Reset
+                  </PanelHeaderButton>
+                </div>
+              )}
+            </div>
+          )}
+        </PanelHeader>
+        <div className="h-full flex-1 overflow-hidden">
+          <CodeMirrorEditor
+            theme={theme}
+            editable={!isStreaming && editorDocument !== undefined}
+            settings={editorSettings}
+            doc={editorDocument}
+            autoFocusOnDocumentChange={!isMobile()}
+            onScroll={onEditorScroll}
+            onChange={onEditorChange}
+            onSave={onFileSave}
+          />
+        </div>
+      </Panel>
+    );
+
     return (
       <PanelGroup direction="vertical">
         <Panel defaultSize={showTerminal ? DEFAULT_EDITOR_SIZE : 100} minSize={20}>
           <PanelGroup direction="horizontal">
-            <Panel defaultSize={20} minSize={10} collapsible>
-              <div className="flex flex-col border-r border-bolt-elements-borderColor h-full">
-                <PanelHeader>
-                  <div className="i-ph:tree-structure-duotone shrink-0" />
-                  Files
-                </PanelHeader>
-                <FileTree
-                  className="h-full"
-                  files={files}
-                  hideRoot
-                  unsavedFiles={unsavedFiles}
-                  rootFolder={WORK_DIR}
-                  selectedFile={selectedFile}
-                  onFileSelect={onFileSelect}
-                />
-              </div>
-            </Panel>
-            <PanelResizeHandle />
-            <Panel className="flex flex-col" defaultSize={80} minSize={20}>
-              <PanelHeader className="overflow-x-auto">
-                {activeFileSegments?.length && (
-                  <div className="flex items-center flex-1 text-sm">
-                    <FileBreadcrumb pathSegments={activeFileSegments} files={files} onFileSelect={onFileSelect} />
-                    {activeFileUnsaved && (
-                      <div className="flex gap-1 ml-auto -mr-1.5">
-                        <PanelHeaderButton onClick={onFileSave}>
-                          <div className="i-ph:floppy-disk-duotone" />
-                          Save
-                        </PanelHeaderButton>
-                        <PanelHeaderButton onClick={onFileReset}>
-                          <div className="i-ph:clock-counter-clockwise-duotone" />
-                          Reset
-                        </PanelHeaderButton>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </PanelHeader>
-              <div className="h-full flex-1 overflow-hidden">
-                <CodeMirrorEditor
-                  theme={theme}
-                  editable={!isStreaming && editorDocument !== undefined}
-                  settings={editorSettings}
-                  doc={editorDocument}
-                  autoFocusOnDocumentChange={!isMobile()}
-                  onScroll={onEditorScroll}
-                  onChange={onEditorChange}
-                  onSave={onFileSave}
-                />
-              </div>
-            </Panel>
+            {isRTL ? (
+              <>
+                {editorContentPanel}
+                <PanelResizeHandle />
+                {fileTreePanel}
+              </>
+            ) : (
+              <>
+                {fileTreePanel}
+                <PanelResizeHandle />
+                {editorContentPanel}
+              </>
+            )}
           </PanelGroup>
         </Panel>
         <PanelResizeHandle />

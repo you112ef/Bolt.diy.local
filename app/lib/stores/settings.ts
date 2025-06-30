@@ -56,3 +56,22 @@ export const latestBranchStore = atom(false);
 
 export const autoSelectStarterTemplate = atom(false);
 export const enableContextOptimizationStore = atom(false);
+
+// Battery Saver Mode
+export const isBatterySaverEnabled = atom(false);
+
+export function toggleBatterySaverMode() {
+  isBatterySaverEnabled.set(!isBatterySaverEnabled.get());
+  // Optionally, persist this to localStorage if desired
+  // if (typeof localStorage !== 'undefined') {
+  //   localStorage.setItem('bolt_battery_saver', isBatterySaverEnabled.get().toString());
+  // }
+}
+
+// Initialize from localStorage if needed (example)
+// if (typeof localStorage !== 'undefined') {
+//   const persistedBatterySaver = localStorage.getItem('bolt_battery_saver');
+//   if (persistedBatterySaver) {
+//     isBatterySaverEnabled.set(persistedBatterySaver === 'true');
+//   }
+// }

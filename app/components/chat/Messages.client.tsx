@@ -57,16 +57,19 @@ export const Messages = React.forwardRef<HTMLDivElement, MessagesProps>((props: 
             return (
               <div
                 key={index}
+                // For user messages, avatar is first, then content. For assistant, content is first, then actions.
+                // RTL should reverse this visual order.
                 className={classNames('flex gap-4 p-6 w-full rounded-[calc(0.75rem-1px)]', {
                   'bg-bolt-elements-messages-background': isUserMessage || !isStreaming || (isStreaming && !isLast),
                   'bg-gradient-to-b from-bolt-elements-messages-background from-30% to-transparent':
                     isStreaming && isLast,
                   'mt-4': !isFirst,
+                  'rtl:flex-row-reverse': true, // Apply to all messages for consistent structure handling
                 })}
               >
                 {isUserMessage && (
                   <div className="flex items-center justify-center w-[34px] h-[34px] overflow-hidden bg-white text-gray-600 rounded-full shrink-0 self-start">
-                    <div className="i-ph:user-fill text-xl"></div>
+                    <div className="i-ph:user-fill text-xl"></div> {/* Symmetrical icon */}
                   </div>
                 )}
                 <div className="grid grid-col-1 w-full">
@@ -77,7 +80,10 @@ export const Messages = React.forwardRef<HTMLDivElement, MessagesProps>((props: 
                   )}
                 </div>
                 {!isUserMessage && (
-                  <div className="flex gap-2 flex-col lg:flex-row">
+                  // Buttons are on the right in LTR, should be on the left in RTL.
+                  // The parent 'flex rtl:flex-row-reverse' handles the overall block positioning.
+                  // This internal flex container manages the button order within their block.
+                  <div className="flex gap-2 flex-col lg:flex-row rtl:lg:flex-row-reverse">
                     {messageId && (
                       <WithTooltip tooltip="Revert to this message">
                         <button

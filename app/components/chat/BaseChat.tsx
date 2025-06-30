@@ -32,6 +32,9 @@ import StarterTemplates from './StarterTemplates';
 import type { ActionAlert } from '~/types/actions';
 import ChatAlert from './ChatAlert';
 import { LLMManager } from '~/lib/modules/llm/manager';
+import { useConnectivityStore } from '~/lib/stores/connectivity'; // Import connectivity store
+import { type Message as VercelChatMessage } from 'ai'; // Ensure type compatibility
+import SpeechRecognitionButton from './SpeechRecognitionButton'; // Import SpeechRecognitionButton
 
 const TEXTAREA_MIN_HEIGHT = 76;
 
@@ -104,10 +107,15 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     const [apiKeys, setApiKeys] = useState<Record<string, string>>(getApiKeysFromCookies());
     const [modelList, setModelList] = useState(MODEL_LIST);
     const [isModelSettingsCollapsed, setIsModelSettingsCollapsed] = useState(false);
-    const [isListening, setIsListening] = useState(false);
-    const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
-    const [transcript, setTranscript] = useState('');
+    // const [isListening, setIsListening] = useState(false); // Now managed by SpeechRecognitionButton
+    // const [recognition, setRecognition] = useState<SpeechRecognition | null>(null); // Now managed by SpeechRecognitionButton
+    // const [transcript, setTranscript] = useState(''); // Transcript is now directly set to input
     const [isModelLoading, setIsModelLoading] = useState<string | undefined>('all');
+    const { isOnline, localLlamaStatus } = useConnectivityStore(state => ({ isOnline: state.isOnline, localLlamaStatus: state.localLlamaStatus }));
+
+    // This prop might be needed if useChat doesn't expose a direct way to add an assistant message
+    // For now, we'll assume sendMessage handles the user message, and we'll manually construct assistant message display
+    // const appendMessage = useStore(chatStore)?.append; // Example: if chatStore had an append function
 
     const getProviderSettings = useCallback(() => {
       let providerSettings: Record<string, IProviderSetting> | undefined = undefined;
@@ -131,41 +139,9 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
 
       return providerSettings;
     }, []);
-    useEffect(() => {
-      console.log(transcript);
-    }, [transcript]);
+    // useEffect for console.log(transcript) can be removed as transcript state is removed.
 
-    useEffect(() => {
-      if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-
-        recognition.onresult = (event) => {
-          const transcript = Array.from(event.results)
-            .map((result) => result[0])
-            .map((result) => result.transcript)
-            .join('');
-
-          setTranscript(transcript);
-
-          if (handleInputChange) {
-            const syntheticEvent = {
-              target: { value: transcript },
-            } as React.ChangeEvent<HTMLTextAreaElement>;
-            handleInputChange(syntheticEvent);
-          }
-        };
-
-        recognition.onerror = (event) => {
-          console.error('Speech recognition error:', event.error);
-          setIsListening(false);
-        };
-
-        setRecognition(recognition);
-      }
-    }, []);
+    // useEffect for SpeechRecognition setup is removed as it's now encapsulated in SpeechRecognitionButton.
 
     useEffect(() => {
       if (typeof window !== 'undefined') {
@@ -226,38 +202,71 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       }
     };
 
-    const startListening = () => {
-      if (recognition) {
-        recognition.start();
-        setIsListening(true);
+    // startListening and stopListening are removed as they are managed by SpeechRecognitionButton
+
+    const handleTranscriptUpdate = (newTranscript: string) => {
+      if (handleInputChange) {
+        // Create a synthetic event to mimic a textarea change
+        const syntheticEvent = {
+          target: { value: newTranscript },
+          currentTarget: { value: newTranscript }, // Often needed as well
+        } as unknown as React.ChangeEvent<HTMLTextAreaElement>; // Type assertion
+        handleInputChange(syntheticEvent);
       }
     };
 
-    const stopListening = () => {
-      if (recognition) {
-        recognition.stop();
-        setIsListening(false);
-      }
-    };
+    const handleSendMessage = async (event: React.UIEvent, messageInput?: string) => {
+      const currentInputVal = messageInput ?? input; // Use current value of input state
+      if (!currentInputVal.trim()) return;
 
-    const handleSendMessage = (event: React.UIEvent, messageInput?: string) => {
-      if (sendMessage) {
-        sendMessage(event, messageInput);
+      // --- Offline Logic ---
+      if (!isOnline) {
+        if (localLlamaStatus === 'loaded' && typeof (window as any).callLocalLlama === 'function') {
+          toast.info('Sending to local LLaMA model...');
+          try {
+            const localMessagesHistory = (messages || []).map(m => ({ role: m.role, content: m.content as string }));
+            localMessagesHistory.push({ role: 'user', content: currentInputVal });
 
-        if (recognition) {
-          recognition.abort(); // Stop current recognition
-          setTranscript(''); // Clear transcript
-          setIsListening(false);
+            if (sendMessage) { // Add user message to UI
+              sendMessage(event, currentInputVal);
+            }
 
-          // Clear the input by triggering handleInputChange with empty value
-          if (handleInputChange) {
-            const syntheticEvent = {
-              target: { value: '' },
-            } as React.ChangeEvent<HTMLTextAreaElement>;
-            handleInputChange(syntheticEvent);
+            const response = await (window as any).callLocalLlama(currentInputVal, localMessagesHistory);
+            toast.success(<div><strong>Local LLaMA:</strong><br/>{response.content}</div>, { autoClose: 5000 });
+
+            if (sendMessage) { // If sendMessage was called, it likely cleared the input
+                 setUploadedFiles?.([]);
+                 setImageDataList?.([]);
+            } else { // If sendMessage was not called (e.g. if it's only for cloud), clear manually
+                if (handleInputChange) {
+                  const syntheticEvent = { target: { value: '' } } as React.ChangeEvent<HTMLTextAreaElement>;
+                  handleInputChange(syntheticEvent);
+                }
+                setUploadedFiles?.([]);
+                setImageDataList?.([]);
+            }
+          } catch (error) {
+            console.error('Error calling local LLaMA:', error);
+            toast.error('Error with local LLaMA model.');
           }
+        } else {
+          toast.error('Offline: Local LLaMA model not ready or available.');
         }
+        return;
       }
+
+      // --- Online Logic with Cache Check ---
+      // (Assuming cache logic would be here or within sendMessage prop itself)
+      if (sendMessage) {
+        sendMessage(event, currentInputVal);
+        setUploadedFiles?.([]);
+        setImageDataList?.([]);
+      }
+
+      // Speech recognition cleanup happens within SpeechRecognitionButton now if it was active
+      // However, if sending a message should stop an *active* recording:
+      // This would require SpeechRecognitionButton to expose a method or react to a prop.
+      // For now, this is handled by the user manually stopping dictation before sending.
     };
 
     const handleFileUpload = () => {
@@ -315,18 +324,18 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     const baseChat = (
       <div
         ref={ref}
-        className={classNames(styles.BaseChat, 'relative flex h-full w-full overflow-hidden')}
+        className={classNames(styles.BaseChat, 'relative flex h-full w-full overflow-hidden rtl:flex-row-reverse')}
         data-chat-visible={showChat}
       >
         <ClientOnly>{() => <Menu />}</ClientOnly>
-        <div ref={scrollRef} className="flex flex-col lg:flex-row overflow-y-auto w-full h-full">
+        <div ref={scrollRef} className="flex flex-col lg:flex-row rtl:lg:flex-row-reverse overflow-y-auto w-full h-full">
           <div className={classNames(styles.Chat, 'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full')}>
             {!chatStarted && (
               <div id="intro" className="mt-[16vh] max-w-chat mx-auto text-center px-4 lg:px-0">
-                <h1 className="text-3xl lg:text-6xl font-bold text-bolt-elements-textPrimary mb-4 animate-fade-in">
+                <h1 className="text-3xl lg:text-6xl font-bold text-bolt-elements-textPrimary mb-4 animate-fade-in rtl:text-right">
                   Where ideas begin
                 </h1>
-                <p className="text-md lg:text-xl mb-8 text-bolt-elements-textSecondary animate-fade-in animation-delay-200">
+                <p className="text-md lg:text-xl mb-8 text-bolt-elements-textSecondary animate-fade-in animation-delay-200 rtl:text-right">
                   Bring ideas to life in seconds or get help on existing projects.
                 </p>
               </div>
@@ -455,8 +464,9 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                   >
                     <textarea
                       ref={textareaRef}
+                      dir="auto" // Added dir="auto" for bidirectional support
                       className={classNames(
-                        'w-full pl-4 pt-4 pr-16 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm',
+                        'w-full pl-4 pt-4 pr-16 rtl:pr-4 rtl:pl-16 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm', // Removed rtl:text-right to let dir="auto" handle text alignment
                         'transition-all duration-200',
                         'hover:border-bolt-elements-focus',
                       )}
@@ -542,10 +552,10 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                         />
                       )}
                     </ClientOnly>
-                    <div className="flex justify-between items-center text-sm p-4 pt-2">
-                      <div className="flex gap-1 items-center">
+                    <div className="flex justify-between items-center text-sm p-4 pt-2 rtl:flex-row-reverse">
+                      <div className="flex gap-1 items-center rtl:flex-row-reverse"> {/* Reversed for button order */}
                         <IconButton title="Upload file" className="transition-all" onClick={() => handleFileUpload()}>
-                          <div className="i-ph:paperclip text-xl"></div>
+                          <div className="i-ph:paperclip text-xl"></div> {/* Symmetrical icon */}
                         </IconButton>
                         <IconButton
                           title="Enhance prompt"
@@ -564,15 +574,14 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                         </IconButton>
 
                         <SpeechRecognitionButton
-                          isListening={isListening}
-                          onStart={startListening}
-                          onStop={stopListening}
+                          onTranscript={handleTranscriptUpdate}
                           disabled={isStreaming}
+                          currentInput={input} // Pass current input to allow appending
                         />
                         {chatStarted && <ClientOnly>{() => <ExportChatButton exportChat={exportChat} />}</ClientOnly>}
                         <IconButton
                           title="Model Settings"
-                          className={classNames('transition-all flex items-center gap-1', {
+                          className={classNames('transition-all flex items-center rtl:flex-row-reverse gap-1', { // Added rtl:flex-row-reverse for icon-text order
                             'bg-bolt-elements-item-backgroundAccent text-bolt-elements-item-contentAccent':
                               isModelSettingsCollapsed,
                             'bg-bolt-elements-item-backgroundDefault text-bolt-elements-item-contentDefault':
@@ -581,12 +590,12 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                           onClick={() => setIsModelSettingsCollapsed(!isModelSettingsCollapsed)}
                           disabled={!providerList || providerList.length === 0}
                         >
-                          <div className={`i-ph:caret-${isModelSettingsCollapsed ? 'right' : 'down'} text-lg`} />
+                          <div className={`i-ph:caret-${isModelSettingsCollapsed ? 'right rtl:left' : 'down'} text-lg`} /> {/* Flipped caret-right for RTL */}
                           {isModelSettingsCollapsed ? <span className="text-xs">{model}</span> : <span />}
                         </IconButton>
                       </div>
                       {input.length > 3 ? (
-                        <div className="text-xs text-bolt-elements-textTertiary">
+                        <div className="text-xs text-bolt-elements-textTertiary rtl:text-right"> {/* Text alignment for RTL */}
                           Use <kbd className="kdb px-1.5 py-0.5 rounded bg-bolt-elements-background-depth-2">Shift</kbd>{' '}
                           + <kbd className="kdb px-1.5 py-0.5 rounded bg-bolt-elements-background-depth-2">Return</kbd>{' '}
                           a new line
@@ -599,7 +608,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
             </div>
             <div className="flex flex-col justify-center gap-5">
               {!chatStarted && (
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center rtl:flex-row-reverse gap-2"> {/* Reversed for button order */}
                   {ImportButtons(importChat)}
                   <GitCloneButton importChat={importChat} />
                 </div>

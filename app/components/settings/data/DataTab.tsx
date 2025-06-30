@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@remix-run/react';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { db, deleteById, getAll } from '~/lib/persistence';
 import { logStore } from '~/lib/stores/logs';
 import { classNames } from '~/utils/classNames';
+import { cache } from '~/lib/cache'; // Import the cache utility
 
 // List of supported providers that can have API keys
 const API_KEY_PROVIDERS = [
@@ -295,6 +297,24 @@ export default function DataTab() {
                   Import API Keys
                   <input type="file" accept=".json" onChange={handleImportApiKeys} className="hidden" />
                 </label>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-bolt-elements-textPrimary mb-2">AI Response Cache</h4>
+              <p className="text-sm text-bolt-elements-textSecondary mb-4">
+                Clear locally cached AI responses. This may help if you encounter repetitive or outdated answers from the AI.
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    cache.clearAll();
+                    toast.success('AI response cache cleared successfully!');
+                  }}
+                  className="px-4 py-2 bg-bolt-elements-button-secondary-background hover:bg-bolt-elements-button-secondary-backgroundHover text-bolt-elements-textPrimary rounded-lg transition-colors"
+                >
+                  Clear Cache
+                </button>
               </div>
             </div>
           </div>

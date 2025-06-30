@@ -47,3 +47,102 @@
     transform: translateY(6px);
   }
 }
+
+/* Interactive Element Enhancements */
+
+/* Button Styles & Animations */
+.interactive-button {
+  transition: transform 0.15s var(--bolt-ease-cubic-bezier), box-shadow 0.15s var(--bolt-ease-cubic-bezier), background-color 0.15s var(--bolt-ease-cubic-bezier);
+  will-change: transform, box-shadow;
+}
+
+.interactive-button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Light theme shadow, adapt for dark theme if needed directly or via CSS vars */
+}
+:root[data-theme='dark'] .interactive-button:hover {
+  box-shadow: 0 4px 15px rgba(var(--bolt-elements-accent-primary-rgb, 158, 117, 240), 0.3); /* Use accent color for dark theme glow */
+}
+
+.interactive-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+:root[data-theme='dark'] .interactive-button:active {
+  box-shadow: 0 2px 10px rgba(var(--bolt-elements-accent-primary-rgb, 158, 117, 240), 0.2);
+}
+
+
+/* Input Field Focus Glow */
+.interactive-input {
+  transition: box-shadow 0.2s var(--bolt-ease-cubic-bezier), border-color 0.2s var(--bolt-ease-cubic-bezier);
+}
+
+.interactive-input:focus,
+.interactive-input:focus-within { /* for elements wrapping inputs */
+  border-color: var(--bolt-elements-borderColorActive, theme('colors.accent.500')); /* Fallback to a theme color */
+  box-shadow: 0 0 0 3px rgba(var(--bolt-elements-accent-primary-rgb, 158, 117, 240), 0.25); /* Use accent color for glow */
+}
+/* Assuming --bolt-elements-accent-primary-rgb is defined, e.g. 158, 117, 240 for accent.500 */
+/* If not, a specific RGB value should be used or this variable added to variables.scss */
+/* For example, if accent.500 is #9E75F0, then RGB is 158, 117, 240 */
+
+
+/* Link Styles & Animations */
+.interactive-link {
+  transition: color 0.15s var(--bolt-ease-cubic-bezier), text-decoration-color 0.15s var(--bolt-ease-cubic-bezier);
+  text-decoration-color: transparent; /* Prepare for underline animation if desired */
+}
+
+.interactive-link:hover,
+.interactive-link:focus {
+  color: var(--bolt-elements-messages-linkColor); /* Ensure it uses the themed link color */
+  text-decoration-color: var(--bolt-elements-messages-linkColor); /* Underline with link color on hover */
+}
+
+/* Battery Saver Mode - Reduce Animations & Transitions */
+.battery-saver-active * {
+  /* Force very short duration for transitions and animations */
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  /* For animations that might not respect duration, try to pause them */
+  /* animation-play-state: paused !important; - This might be too aggressive and break some state visibility */
+  /* Instead, rely on short duration. Specific problematic animations can be targeted directly. */
+
+  /* Disable scroll-behavior animations */
+  scroll-behavior: auto !important;
+}
+
+/* Optionally, target specific complex effects if they are known and tagged with a class */
+.battery-saver-active .some-complex-shadow-effect {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Reduce motion for Framer Motion if it respects prefers-reduced-motion via a similar class or attribute */
+/* This is more of a conceptual note as Framer Motion's direct integration would be more complex */
+.battery-saver-active [data-framer-motion-reduced] {
+  /* Framer Motion might have its own ways to handle reduced motion */
+}
+
+/* Specifically target known transition/animation classes if the wildcard is too broad or causes issues */
+.battery-saver-active .interactive-button,
+.battery-saver-active .interactive-input,
+.battery-saver-active .interactive-link,
+.battery-saver-active .dropdown-animation,
+.battery-saver-active .animated {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+
+/* Remove potentially heavy box-shadows from interactive elements in battery saver mode */
+.battery-saver-active .interactive-button:hover,
+.battery-saver-active :root[data-theme='dark'] .interactive-button:hover,
+.battery-saver-active .interactive-button:active,
+.battery-saver-active :root[data-theme='dark'] .interactive-button:active,
+.battery-saver-active .interactive-input:focus,
+.battery-saver-active .interactive-input:focus-within {
+  box-shadow: none !important;
+}

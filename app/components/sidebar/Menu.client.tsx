@@ -16,7 +16,8 @@ const menuVariants = {
   closed: {
     opacity: 0,
     visibility: 'hidden',
-    left: '-150px',
+    left: '-100%', // Adjusted for off-screen positioning
+    right: 'auto',
     transition: {
       duration: 0.2,
       ease: cubicEasingFn,
@@ -26,6 +27,30 @@ const menuVariants = {
     opacity: 1,
     visibility: 'initial',
     left: 0,
+    right: 'auto', // Ensure LTR is not affected by RTL changes
+    transition: {
+      duration: 0.2,
+      ease: cubicEasingFn,
+    },
+  },
+} satisfies Variants;
+
+const menuVariantsRTL = {
+  closed: {
+    opacity: 0,
+    visibility: 'hidden',
+    right: '-100%', // Adjusted for off-screen positioning
+    left: 'auto',
+    transition: {
+      duration: 0.2,
+      ease: cubicEasingFn,
+    },
+  },
+  open: {
+    opacity: 1,
+    visibility: 'initial',
+    right: 0,
+    left: 'auto', // Ensure RTL is not affected by LTR changes
     transition: {
       duration: 0.2,
       ease: cubicEasingFn,
@@ -61,6 +86,12 @@ export const Menu = () => {
   const [open, setOpen] = useState(false);
   const [dialogContent, setDialogContent] = useState<DialogContent>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
+
+  useEffect(() => {
+    // Assuming html dir attribute is set for RTL
+    setIsRTL(document.documentElement.dir === 'rtl');
+  }, []);
 
   const { filteredItems: filteredList, handleSearchChange } = useSearchFilter({
     items: list,
@@ -111,12 +142,23 @@ export const Menu = () => {
     const exitThreshold = 40;
 
     function onMouseMove(event: MouseEvent) {
-      if (event.pageX < enterThreshold) {
-        setOpen(true);
-      }
+      const menuRect = menuRef.current?.getBoundingClientRect();
+      if (!menuRect) return;
 
-      if (menuRef.current && event.clientX > menuRef.current.getBoundingClientRect().right + exitThreshold) {
-        setOpen(false);
+      if (isRTL) {
+        if (event.clientX > window.innerWidth - enterThreshold) {
+          setOpen(true);
+        }
+        if (event.clientX < menuRect.left - exitThreshold) {
+          setOpen(false);
+        }
+      } else {
+        if (event.pageX < enterThreshold) {
+          setOpen(true);
+        }
+        if (event.clientX > menuRect.right + exitThreshold) {
+          setOpen(false);
+        }
       }
     }
 
@@ -125,7 +167,7 @@ export const Menu = () => {
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
     };
-  }, []);
+  }, [isRTL]);
 
   const handleDeleteClick = (event: React.UIEvent, item: ChatHistoryItem) => {
     event.preventDefault();
@@ -142,41 +184,42 @@ export const Menu = () => {
       ref={menuRef}
       initial="closed"
       animate={open ? 'open' : 'closed'}
-      variants={menuVariants}
-      className="flex selection-accent flex-col side-menu fixed top-0 w-[350px] h-full bg-bolt-elements-background-depth-2 border-r rounded-r-3xl border-bolt-elements-borderColor z-sidebar shadow-xl shadow-bolt-elements-sidebar-dropdownShadow text-sm"
+      variants={isRTL ? menuVariantsRTL : menuVariants}
+      className="flex selection-accent flex-col side-menu fixed top-0 w-full sm:w-[300px] md:w-[350px] h-full bg-bolt-elements-background-depth-2 border-bolt-elements-borderColor z-sidebar shadow-xl shadow-bolt-elements-sidebar-dropdownShadow text-sm rounded-r-3xl rtl:rounded-r-none rtl:rounded-l-3xl border-r rtl:border-r-0 rtl:border-l"
     >
-      <div className="h-[60px]" /> {/* Spacer for top margin */}
+      <div className="h-[var(--header-height)]" /> {/* Spacer for top margin, using variable */}
       <CurrentDateTime />
       <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
         <div className="p-4 select-none">
           <a
             href="/"
-            className="flex gap-2 items-center bg-bolt-elements-sidebar-buttonBackgroundDefault text-bolt-elements-sidebar-buttonText hover:bg-bolt-elements-sidebar-buttonBackgroundHover rounded-md p-2 transition-theme mb-4"
+            className="flex gap-2 items-center bg-bolt-elements-sidebar-buttonBackgroundDefault text-bolt-elements-sidebar-buttonText hover:bg-bolt-elements-sidebar-buttonBackgroundHover rounded-md p-2 transition-theme mb-4 rtl:flex-row-reverse"
           >
             <span className="inline-block i-bolt:chat scale-110" />
             Start new chat
           </a>
           <div className="relative w-full">
             <input
-              className="w-full bg-white dark:bg-bolt-elements-background-depth-4 relative px-2 py-1.5 rounded-md focus:outline-none placeholder-bolt-elements-textTertiary text-bolt-elements-textPrimary dark:text-bolt-elements-textPrimary border border-bolt-elements-borderColor"
+              className="w-full bg-white dark:bg-bolt-elements-background-depth-4 relative ps-2 pe-8 py-1.5 rounded-md focus:outline-none placeholder-bolt-elements-textTertiary text-bolt-elements-textPrimary dark:text-bolt-elements-textPrimary border border-bolt-elements-borderColor" // Added pe-8 for potential icon
               type="search"
               placeholder="Search"
               onChange={handleSearchChange}
               aria-label="Search chats"
             />
+            {/* Consider adding a search icon absolutely positioned here if design requires */}
           </div>
         </div>
-        <div className="text-bolt-elements-textPrimary font-medium pl-6 pr-5 my-2">Your Chats</div>
-        <div className="flex-1 overflow-auto pl-4 pr-5 pb-5">
+        <div className="text-bolt-elements-textPrimary font-medium ps-6 pe-5 my-2 rtl:text-right">Your Chats</div>
+        <div className="flex-1 overflow-auto ps-4 pe-5 pb-5">
           {filteredList.length === 0 && (
-            <div className="pl-2 text-bolt-elements-textTertiary">
+            <div className="ps-2 text-bolt-elements-textTertiary rtl:text-right">
               {list.length === 0 ? 'No previous conversations' : 'No matches found'}
             </div>
           )}
           <DialogRoot open={dialogContent !== null}>
             {binDates(filteredList).map(({ category, items }) => (
               <div key={category} className="mt-4 first:mt-0 space-y-1">
-                <div className="text-bolt-elements-textTertiary sticky top-0 z-1 bg-bolt-elements-background-depth-2 pl-2 pt-2 pb-1">
+                <div className="text-bolt-elements-textTertiary sticky top-0 z-1 bg-bolt-elements-background-depth-2 ps-2 pt-2 pb-1 rtl:text-right">
                   {category}
                 </div>
                 {items.map((item) => (
@@ -202,7 +245,7 @@ export const Menu = () => {
                       <p className="mt-1">Are you sure you want to delete this chat?</p>
                     </div>
                   </DialogDescription>
-                  <div className="px-5 pb-4 bg-bolt-elements-background-depth-2 flex gap-2 justify-end">
+                  <div className="px-5 pb-4 bg-bolt-elements-background-depth-2 flex gap-2 justify-end rtl:flex-row-reverse">
                     <DialogButton type="secondary" onClick={closeDialog}>
                       Cancel
                     </DialogButton>
@@ -221,7 +264,7 @@ export const Menu = () => {
             </Dialog>
           </DialogRoot>
         </div>
-        <div className="flex items-center justify-between border-t border-bolt-elements-borderColor p-4">
+        <div className="flex items-center justify-between border-t border-bolt-elements-borderColor p-4 rtl:flex-row-reverse">
           <SettingsButton onClick={() => setIsSettingsOpen(true)} />
           <ThemeSwitch />
         </div>

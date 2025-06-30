@@ -200,10 +200,10 @@ function ContextMenuItem({ onSelect, children }: { onSelect?: () => void; childr
   return (
     <ContextMenu.Item
       onSelect={onSelect}
-      className="flex items-center gap-2 px-2 py-1.5 outline-0 text-sm text-bolt-elements-textPrimary cursor-pointer ws-nowrap text-bolt-elements-item-contentDefault hover:text-bolt-elements-item-contentActive hover:bg-bolt-elements-item-backgroundActive rounded-md"
+      className="flex items-center rtl:flex-row-reverse gap-2 px-2 py-1.5 outline-0 text-sm text-bolt-elements-textPrimary cursor-pointer ws-nowrap text-bolt-elements-item-contentDefault hover:text-bolt-elements-item-contentActive hover:bg-bolt-elements-item-backgroundActive rounded-md"
     >
-      <span className="size-4 shrink-0"></span>
-      <span>{children}</span>
+      <span className="size-4 shrink-0"></span> {/* Icon placeholder, order handled by flex-row-reverse */}
+      <span className="rtl:text-right">{children}</span> {/* Text alignment for RTL */}
     </ContextMenu.Item>
   );
 }
@@ -238,8 +238,8 @@ function Folder({ folder, collapsed, selected = false, onCopyPath, onCopyRelativ
         })}
         depth={folder.depth}
         iconClasses={classNames({
-          'i-ph:caret-right scale-98': collapsed,
-          'i-ph:caret-down scale-98': !collapsed,
+          'i-ph:caret-right rtl:i-ph:caret-left scale-98': collapsed, // Flipped icon for RTL
+          'i-ph:caret-down scale-98': !collapsed, // Symmetrical
         })}
         onClick={onClick}
       >
@@ -305,14 +305,18 @@ function NodeButton({ depth, iconClasses, onClick, className, children }: Button
   return (
     <button
       className={classNames(
-        'flex items-center gap-1.5 w-full pr-2 border-2 border-transparent text-faded py-0.5',
+        'flex items-center rtl:flex-row-reverse gap-1.5 w-full pr-2 rtl:pr-0 rtl:pl-2 border-2 border-transparent text-faded py-0.5', // Adjusted padding for RTL
         className,
       )}
-      style={{ paddingLeft: `${6 + depth * NODE_PADDING_LEFT}px` }}
+      style={
+        document.documentElement.dir === 'rtl'
+          ? { paddingRight: `${6 + depth * NODE_PADDING_LEFT}px` }
+          : { paddingLeft: `${6 + depth * NODE_PADDING_LEFT}px` }
+      } // Conditional padding for RTL
       onClick={() => onClick?.()}
     >
       <div className={classNames('scale-120 shrink-0', iconClasses)}></div>
-      <div className="truncate w-full text-left">{children}</div>
+      <div className="truncate w-full text-left rtl:text-right">{children}</div> {/* Text alignment for RTL */}
     </button>
   );
 }

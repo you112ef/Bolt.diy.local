@@ -70,7 +70,7 @@ export const FileBreadcrumb = memo<FileBreadcrumbProps>(({ files, pathSegments =
   }
 
   return (
-    <div className="flex">
+    <div className="flex rtl:flex-row-reverse">
       {pathSegments.map((segment, index) => {
         const isLast = index === pathSegments.length - 1;
 
@@ -88,10 +88,10 @@ export const FileBreadcrumb = memo<FileBreadcrumbProps>(({ files, pathSegments =
               <DropdownMenu.Trigger asChild>
                 <span
                   ref={(ref) => (segmentRefs.current[index] = ref)}
-                  className={classNames('flex items-center gap-1.5 cursor-pointer shrink-0', {
+                  className={classNames('flex items-center gap-1.5 cursor-pointer shrink-0 rtl:flex-row-reverse', { // Added rtl:flex-row-reverse for icon-text order
                     'text-bolt-elements-textTertiary hover:text-bolt-elements-textPrimary': !isActive,
                     'text-bolt-elements-textPrimary underline': isActive,
-                    'pr-4': isLast,
+                    'pr-4 rtl:pl-4 rtl:pr-0': isLast, // Adjusted padding for RTL
                   })}
                   onClick={() => handleSegmentClick(index)}
                 >
@@ -99,7 +99,7 @@ export const FileBreadcrumb = memo<FileBreadcrumbProps>(({ files, pathSegments =
                   {segment}
                 </span>
               </DropdownMenu.Trigger>
-              {index > 0 && !isLast && <span className="i-ph:caret-right inline-block mx-1" />}
+              {index > 0 && !isLast && <span className="i-ph:caret-right rtl:i-ph:caret-left inline-block mx-1" />} {/* Flipped caret for RTL */}
               <AnimatePresence>
                 {isActive && (
                   <DropdownMenu.Portal>

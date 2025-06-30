@@ -22,6 +22,13 @@ export async function openDatabase(): Promise<IDBDatabase | undefined> {
         store.createIndex('id', 'id', { unique: true });
         store.createIndex('urlId', 'urlId', { unique: true });
       }
+      // Add automationRules object store
+      if (!db.objectStoreNames.contains('automationRules')) {
+        const store = db.createObjectStore('automationRules', { keyPath: 'id' });
+        // Potentially add indexes for querying, e.g., by trigger type or isEnabled
+        store.createIndex('isEnabled', 'isEnabled', { unique: false });
+        store.createIndex('triggerType', 'trigger.type', { unique: false }); // Indexing nested property
+      }
     };
 
     request.onsuccess = (event: Event) => {

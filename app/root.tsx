@@ -2,7 +2,9 @@ import { useStore } from '@nanostores/react';
 import type { LinksFunction } from '@remix-run/cloudflare';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
-import { themeStore } from './lib/stores/theme';
+// Updated imports: use currentThemeStore for resolved theme, and constants from theme.ts
+import { currentThemeStore, kThemeSetting } from './lib/stores/theme';
+import { isBatterySaverEnabled } from './lib/stores/settings'; // Import battery saver store
 import { stripIndents } from './utils/stripIndent';
 import { createHead } from 'remix-island';
 import { useEffect } from 'react';
@@ -39,17 +41,16 @@ export const links: LinksFunction = () => [
 ];
 
 const inlineThemeCode = stripIndents`
-  setTutorialKitTheme();
-
-  function setTutorialKitTheme() {
-    let theme = localStorage.getItem('bolt_theme');
-
-    if (!theme) {
+  (function() {
+    let setting = localStorage.getItem('${kThemeSetting}');
+    let theme;
+    if (setting === 'light' || setting === 'dark') {
+      theme = setting;
+    } else { // 'system' or null/undefined
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-
-    document.querySelector('html')?.setAttribute('data-theme', theme);
-  }
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
 `;
 
 export const Head = createHead(() => (
@@ -63,11 +64,23 @@ export const Head = createHead(() => (
 ));
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const theme = useStore(themeStore);
+  // Use the resolved currentThemeStore here
+  const resolvedTheme = useStore(currentThemeStore);
+  const batterySaverActive = useStore(isBatterySaverEnabled);
 
   useEffect(() => {
-    document.querySelector('html')?.setAttribute('data-theme', theme);
-  }, [theme]);
+    // Apply theme
+    document.documentElement.setAttribute('data-theme', resolvedTheme);
+  }, [resolvedTheme]);
+
+  useEffect(() => {
+    // Apply battery saver class
+    if (batterySaverActive) {
+      document.documentElement.classList.add('battery-saver-active');
+    } else {
+      document.documentElement.classList.remove('battery-saver-active');
+    }
+  }, [batterySaverActive]);
 
   return (
     <>
@@ -81,16 +94,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
 import { logStore } from './lib/stores/logs';
 
 export default function App() {
-  const theme = useStore(themeStore);
+  // For logging purposes, we might want to log both the setting and the resolved theme.
+  // const themeSetting = useStore(themeSettingStore);
+  const resolvedTheme = useStore(currentThemeStore);
 
   useEffect(() => {
     logStore.logSystem('Application initialized', {
-      theme,
+      themeSetting: localStorage.getItem(kThemeSetting) || 'system', // Log the setting
+      resolvedTheme: resolvedTheme, // Log the actual applied theme
       platform: navigator.platform,
       userAgent: navigator.userAgent,
       timestamp: new Date().toISOString(),
     });
-  }, []);
+  }, [resolvedTheme]); // Log when resolvedTheme is determined
 
   return (
     <Layout>

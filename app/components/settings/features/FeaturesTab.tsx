@@ -18,6 +18,8 @@ export default function FeaturesTab() {
     setAutoSelectTemplate,
     enableContextOptimization,
     contextOptimizationEnabled,
+    isBatterySaverEnabled: batterySaverEnabled, // Renamed for clarity in this component
+    toggleBatterySaver,
   } = useSettings();
 
   const handleToggle = (enabled: boolean) => {
@@ -64,6 +66,15 @@ export default function FeaturesTab() {
               checked={contextOptimizationEnabled}
               onCheckedChange={enableContextOptimization}
             />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-bolt-elements-textPrimary">Battery Saver Mode</span>
+              <p className="text-xs text-bolt-elements-textTertiary">
+                Reduces animations and background activity to save power.
+              </p>
+            </div>
+            <Switch className="ml-auto" checked={batterySaverEnabled} onCheckedChange={toggleBatterySaver} />
           </div>
         </div>
       </div>

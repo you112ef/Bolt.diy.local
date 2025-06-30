@@ -15,7 +15,7 @@ export const SendButton = ({ show, isStreaming, disabled, onClick }: SendButtonP
     <AnimatePresence>
       {show ? (
         <motion.button
-          className="absolute flex justify-center items-center top-[18px] right-[22px] p-1 bg-accent-500 hover:brightness-94 color-white rounded-md w-[34px] h-[34px] transition-theme disabled:opacity-50 disabled:cursor-not-allowed"
+          className="interactive-button absolute flex justify-center items-center top-[18px] right-[22px] rtl:right-auto rtl:left-[22px] p-2 bg-accent-500 hover:brightness-94 color-white rounded-md w-[38px] h-[38px] transition-theme disabled:opacity-50 disabled:cursor-not-allowed" // Added .interactive-button, adjusted padding/size, RTL positioning
           transition={{ ease: customEasingFn, duration: 0.17 }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
